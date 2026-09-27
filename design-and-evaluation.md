@@ -6,17 +6,20 @@ This document records the design decisions behind the Veridane Policy Assistant 
 
 The Veridane Policy Assistant answers staff questions about the policies of Veridane Bank. It retrieves the most relevant passages from a corpus of 14 policy documents, passes them to a language model with instructions to answer only from that evidence, and returns an answer that cites the document and section each claim comes from. Questions outside the corpus are refused.
 
-## Architecture (planned)
+## Architecture
 
 ```
-Ingestion (offline, at build time)
+Ingestion (built in Stage 2; runs at build time)
   corpus/ (md, txt, html, pdf)
-    -> parse and clean each format
-    -> chunk by headings, then by token windows with overlap
-    -> embed each chunk (bge-small-en-v1.5, local ONNX)
-    -> store vectors and metadata in Chroma
+    -> parse each format into sections with metadata and citation anchors
+    -> clean (Unicode, whitespace, Markdown markup, PDF footers and glyphs)
+    -> chunk: one chunk per section; long sections split into
+       350-token windows of whole sentences with 50-token overlap
+    -> embed "title (doc ID), section" + chunk text (bge-small-en-v1.5, local ONNX)
+    -> store vectors, text, and metadata in Chroma (cosine distance)
+    -> write index_manifest.json and chunks.jsonl
 
-Question answering (per request)
+Question answering (per request; Stage 3)
   POST /chat {"question": ...}
     -> embed the question
     -> retrieve top-k chunks from Chroma (optional rerank)
@@ -27,14 +30,17 @@ Question answering (per request)
     -> JSON: answer, citations (doc ID, title, section, snippet, link), latency
 ```
 
-## Design Decisions (planned)
+## Design Decisions
 
 | Component | Choice | Reason |
 |---|---|---|
 | Web framework | Flask with gunicorn | Maps directly onto the required `/`, `/chat`, and `/health` routes and stays small enough for a free host. |
-| Embedding model | BAAI/bge-small-en-v1.5 through fastembed | Free, runs locally with no rate limits, gives deterministic vectors, and uses ONNX instead of PyTorch, so it fits in the 512 MB of a free Render instance. |
-| Vector store | Chroma, persistent and local | Named in the brief, file-based, and needs no separate service. The index is rebuilt from the corpus at deploy time. |
-| Chunking | Split on headings first, then 400-token windows with 60-token overlap | Headings follow policy boundaries, so chunks stay coherent and citations can name a section. The window limit handles long sections. |
+| Parsing | One parser per format: YAML front matter (md), header block (txt), meta tags (html), header table (pdf) | Every document ends up with the same metadata and a list of sections, whatever its format. Each document also gets a generated "Document information" section, so questions such as "who owns the KYC policy?" can be answered from retrieval. |
+| PDF extraction | pdfplumber, with tables extracted row by row | Plain text extraction scrambled table cells into one cell per line, which broke tables such as the KYC tier limits. Extracting tables separately keeps each row intact ("2 \| Tier 1 plus... \| USD 2,000 \| USD 1,000"). Running footers and unmapped bullet glyphs are removed during cleaning. |
+| Chunking | One chunk per section; sections over 350 tokens are split into windows of whole sentences with 50-token overlap | Policy sections are short and self-contained (median 63 tokens), so a section is a natural unit of meaning and makes citations precise. Windows only apply to the one section that exceeds the limit (the roles table in the company profile). A fixed-window strategy is also implemented for comparison. |
+| Token counting | Regex tokenizer (words, numbers, and punctuation marks each count as one) | Needs no download and gives identical counts on every machine. It slightly undercounts the model's WordPiece tokens, so the 350 limit leaves headroom under bge-small's 512-token input limit. |
+| Embedding model | BAAI/bge-small-en-v1.5 through fastembed | Free, runs locally with no rate limits, gives deterministic vectors, and uses ONNX instead of PyTorch, so it fits in the 512 MB of a free Render instance. Each chunk is embedded with a short header ("title (doc ID), section") so that short chunks keep their context. Queries use the retrieval instruction recommended for bge models. |
+| Vector store | Chroma, persistent and local, cosine distance | Named in the brief, file-based, and needs no separate service. The index is rebuilt from scratch on every run so it always matches the corpus; a manifest records the settings and a corpus fingerprint, and `/health` reports whether the index is out of date. |
 | Retrieval | Top-k with k = 5 | Covers questions that need two documents without flooding the prompt. Confirmed or changed by the ablation in the evaluation. |
 | LLM | Groq free tier, llama-3.1-8b-instant | Very low latency helps the latency metric. The OpenAI-compatible API means OpenRouter can be swapped in through configuration. |
 | Prompt format | System rules, then numbered context blocks labeled with doc ID and section, then the question | Labeled blocks make it easy for the model to cite, and easy for code to check the citations. |
@@ -99,6 +105,18 @@ The evaluation set has 25 questions:
 - 5 out of scope.
 
 With 20 in-scope questions, each question is worth 5 percentage points.
+
+## Ingestion Results
+
+| Measure | Value |
+|---|---|
+| Documents | 14 (8 Markdown, 2 HTML, 3 PDF, 1 plain text) |
+| Sections after parsing | 344 (including 14 generated "Document information" sections) |
+| Chunks (heading strategy, 350 / 50) | 345 |
+| Tokens per chunk | min 15, median 63, max 350 |
+| Chunks with the window strategy (350 / 50) | 100, median 333 tokens |
+
+Because almost every section is shorter than the chunk size, changing the chunk size barely affects the heading strategy. The chunking ablation therefore compares the two strategies (heading-aware sections versus fixed windows) rather than only varying the size.
 
 ## Evaluation Approach and Results
 

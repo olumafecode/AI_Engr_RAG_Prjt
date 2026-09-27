@@ -5,6 +5,7 @@ Stage 2 builds the full parser, cleaner, and chunker on top of these functions.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -45,3 +46,12 @@ def read_text(path: Path) -> str:
 
 def word_count(text: str) -> int:
     return len(text.split())
+
+
+def corpus_fingerprint(corpus_dir: Path) -> str:
+    """SHA-256 over every corpus file's name and bytes, in sorted order."""
+    digest = hashlib.sha256()
+    for path in list_documents(corpus_dir):
+        digest.update(path.name.encode("utf-8"))
+        digest.update(path.read_bytes())
+    return digest.hexdigest()

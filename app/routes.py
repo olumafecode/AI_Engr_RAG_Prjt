@@ -5,6 +5,7 @@ from __future__ import annotations
 from flask import Blueprint, current_app, jsonify, render_template, request
 
 from app.corpus_utils import list_documents
+from app.index_manifest import index_status
 
 bp = Blueprint("main", __name__)
 
@@ -21,6 +22,7 @@ def health():
         status="ok",
         version=current_app.config["VERSION"],
         corpus_documents=len(list_documents(settings.corpus_dir)),
+        index=index_status(settings),
     )
 
 

@@ -7,6 +7,7 @@ def test_health_reports_ok_and_counts_corpus(client):
     body = response.get_json()
     assert body["status"] == "ok"
     assert body["corpus_documents"] == 14
+    assert "built" in body["index"]
 
 
 def test_index_serves_chat_page(client):
