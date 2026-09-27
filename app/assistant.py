@@ -88,6 +88,10 @@ class PolicyAssistant:
                 chat_model = None  # the relevance gate still works; answers need a key
         self._chat = chat_model
 
+    def warm_up(self) -> None:
+        """Run one retrieval so the model and index are loaded before the first user."""
+        self._retriever.search("warm-up", 1)
+
     def answer(self, question: str) -> Answer:
         settings = self._settings
         started = time.perf_counter()

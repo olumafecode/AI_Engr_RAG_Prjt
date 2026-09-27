@@ -25,6 +25,13 @@ def _float(name: str, default: float) -> float:
     return float(value) if value not in (None, "") else default
 
 
+def _bool(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value in (None, ""):
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
 def _path(name: str, default: str) -> Path:
     return PROJECT_ROOT / os.getenv(name, default)
 
@@ -33,6 +40,7 @@ def _path(name: str, default: str) -> Path:
 class Settings:
     log_level: str = "INFO"
     seed: int = 42
+    warmup_on_start: bool = False  # load the model and index when the server starts
 
     # Paths
     corpus_dir: Path = PROJECT_ROOT / "corpus"
@@ -41,6 +49,7 @@ class Settings:
 
     # Ingestion
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_threads: int = 0  # 0 lets ONNX Runtime decide; 1 suits a small shared CPU
     query_prefix: str = BGE_QUERY_PREFIX
     collection_name: str = "veridane_policies"
     chunk_strategy: str = "heading"
@@ -72,10 +81,12 @@ class Settings:
         return cls(
             log_level=os.getenv("LOG_LEVEL", defaults.log_level),
             seed=_int("SEED", defaults.seed),
+            warmup_on_start=_bool("WARMUP_ON_START", defaults.warmup_on_start),
             corpus_dir=_path("CORPUS_DIR", "corpus"),
             chroma_dir=_path("CHROMA_DIR", ".chroma"),
             model_cache_dir=_path("MODEL_CACHE_DIR", ".cache/fastembed"),
             embedding_model=os.getenv("EMBEDDING_MODEL", defaults.embedding_model),
+            embedding_threads=_int("EMBEDDING_THREADS", defaults.embedding_threads),
             query_prefix=os.getenv("QUERY_PREFIX", defaults.query_prefix),
             collection_name=os.getenv("COLLECTION_NAME", defaults.collection_name),
             chunk_strategy=os.getenv("CHUNK_STRATEGY", defaults.chunk_strategy),

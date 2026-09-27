@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 import threading
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request, send_file
@@ -30,6 +31,17 @@ def get_assistant() -> PolicyAssistant:
     return extensions["policy_assistant"]
 
 
+def _peak_memory_mb() -> float | None:
+    """Peak resident memory of this process, where the platform reports it (not Windows)."""
+    try:
+        import resource
+    except ImportError:
+        return None
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    divisor = 1024 * 1024 if sys.platform == "darwin" else 1024  # bytes on macOS, KB on Linux
+    return round(peak / divisor, 1)
+
+
 @bp.get("/")
 def index():
     return render_template("index.html")
@@ -44,6 +56,8 @@ def health():
         corpus_documents=len(list_documents(settings.corpus_dir)),
         index=index_status(settings),
         llm_configured=bool(settings.groq_api_key),
+        assistant_ready="policy_assistant" in current_app.extensions,
+        peak_memory_mb=_peak_memory_mb(),
     )
 
 

@@ -78,3 +78,20 @@ def test_docs_route_serves_pdf_and_html_sources(client):
 @pytest.mark.parametrize("doc_id", ["VB-POL-999", "..%2Fapp", "not-a-doc"])
 def test_docs_route_rejects_unknown_documents(client, doc_id):
     assert client.get(f"/docs/{doc_id}").status_code == 404
+
+
+def test_health_reports_readiness_and_memory(client):
+    body = client.get("/health").get_json()
+    assert body["assistant_ready"] is False
+    assert "peak_memory_mb" in body
+
+
+def test_warm_up_loads_the_assistant_in_the_background(hash_settings):
+    from dataclasses import replace
+
+    from app import create_app
+
+    app = create_app(replace(hash_settings, warmup_on_start=True))
+    app.extensions["warmup_thread"].join(timeout=30)
+    body = app.test_client().get("/health").get_json()
+    assert body["assistant_ready"] is True

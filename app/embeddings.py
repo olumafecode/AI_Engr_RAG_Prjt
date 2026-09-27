@@ -27,14 +27,18 @@ class Embedder(Protocol):
 
 
 class FastEmbedEmbedder:
-    def __init__(self, model_name: str, cache_dir: Path, query_prefix: str = "") -> None:
+    def __init__(
+        self, model_name: str, cache_dir: Path, query_prefix: str = "", threads: int = 0
+    ) -> None:
         import onnxruntime
         from fastembed import TextEmbedding  # imported lazily: it loads ONNX Runtime
 
         onnxruntime.set_default_logger_severity(3)  # hide hardware-discovery warnings
 
         cache_dir.mkdir(parents=True, exist_ok=True)
-        self._model = TextEmbedding(model_name=model_name, cache_dir=str(cache_dir))
+        self._model = TextEmbedding(
+            model_name=model_name, cache_dir=str(cache_dir), threads=threads or None
+        )
         self.name = model_name
         self.dimension = self._model.embedding_size
         self._query_prefix = query_prefix
@@ -74,5 +78,8 @@ def get_embedder(settings: Settings) -> Embedder:
     if settings.embedding_model == "hash":
         return HashEmbedder()
     return FastEmbedEmbedder(
-        settings.embedding_model, settings.model_cache_dir, settings.query_prefix
+        settings.embedding_model,
+        settings.model_cache_dir,
+        settings.query_prefix,
+        threads=settings.embedding_threads,
     )

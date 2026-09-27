@@ -1,0 +1,28 @@
+# Render Blueprint for the Veridane Policy Assistant.
+# Create the service in the Render Dashboard: New > Blueprint > select this repository.
+services:
+  - type: web
+    name: veridane-policy-assistant
+    runtime: python
+    plan: free # must be set explicitly; without it Render picks a paid plan
+    region: ohio # pick the region closest to you before creating the service
+    # The index is built during the build, so it and the embedding model are part of the
+    # deployed files. Anything written while the service runs is lost when it sleeps.
+    buildCommand: pip install -r requirements.txt && python -m app.ingest
+    startCommand: gunicorn wsgi:app --workers 1 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    # Deploys come only from the GitHub Actions deploy hook, after lint and tests pass.
+    autoDeployTrigger: "off"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.11
+      - key: GROQ_API_KEY
+        sync: false # Render asks for the value when the Blueprint is created
+      - key: WARMUP_ON_START
+        value: "true" # load the model and index at start-up, not on the first question
+      - key: EMBEDDING_THREADS
+        value: "1" # the free instance has a tenth of a CPU
+      - key: MALLOC_ARENA_MAX
+        value: "2" # reduces memory fragmentation in multi-threaded Python
+      - key: LOG_LEVEL
+        value: INFO

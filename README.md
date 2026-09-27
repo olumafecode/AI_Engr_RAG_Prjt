@@ -13,7 +13,7 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 | 2. Ingestion and indexing | Done |
 | 3. Retrieval and generation | Done |
 | 4. Web application | Chat page, `/chat`, `/docs`, and `/health` working; polish next |
-| 5. Deployment to Render | Workflow ready; waiting for a Render service |
+| 5. Deployment to Render | Blueprint (`render.yaml`) ready; see [Deployment](#deployment) |
 | 6. Evaluation | Metrics and targets defined |
 | 7. Documentation and demo | In progress |
 
@@ -47,6 +47,7 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 │   └── render_pdfs.py       Rebuilds the PDFs from corpus_src/
 ├── tests/                   pytest suite (app and corpus checks)
 ├── .github/workflows/ci.yml GitHub Actions: lint, test, deploy
+├── render.yaml              Render Blueprint for the deployed service
 ├── requirements.txt         Runtime dependencies (pinned)
 ├── requirements-dev.txt     Test and tooling dependencies (pinned)
 ├── wsgi.py                  Production entry point for gunicorn
@@ -216,6 +217,25 @@ All settings are read from environment variables, with defaults in `app/config.p
 6. Runs a retrieval smoke test that fails unless the Password and Access Control Policy is among the top results for a password question.
 
 On a push to `main`, a second job triggers a Render deploy, but only after the tests pass. It calls the deploy hook stored in the repository secret `RENDER_DEPLOY_HOOK_URL`. Until that secret exists, the deploy job skips itself and reports success.
+
+## Deployment
+
+The app runs on a Render free web service defined in `render.yaml`:
+
+| Setting | Value | Why |
+|---|---|---|
+| Build command | `pip install -r requirements.txt && python -m app.ingest` | The index and the embedding model are created during the build, so they are part of the deployed files. Render's filesystem does not keep files written while the service runs. |
+| Start command | `gunicorn wsgi:app --workers 1 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT` | One worker keeps memory inside the free instance's 512 MB; two threads let the health check answer while a question is being processed. |
+| Health check | `/health` | Reports the index, whether the assistant is loaded, and peak memory use. |
+| Auto-deploy | Off | Deploys come only from the CI deploy hook, after lint and tests pass. |
+| `PYTHON_VERSION` | 3.12.11 | Matches CI and local development. |
+| `GROQ_API_KEY` | Entered in the Render Dashboard | Never stored in the repository. |
+| `WARMUP_ON_START` | true | Loads the model and index in the background at start-up, so the first question is not slowed down. |
+| `EMBEDDING_THREADS` / `MALLOC_ARENA_MAX` | 1 / 2 | Suit the free instance's tenth of a CPU and keep memory use down. |
+
+To create the service: in the Render Dashboard choose **New > Blueprint**, select this repository, enter the Groq API key when asked, and apply. Then copy the service's deploy hook URL (service **Settings > Deploy Hook**) into the GitHub repository secret `RENDER_DEPLOY_HOOK_URL`.
+
+Free services sleep after 15 minutes without traffic and take about a minute to wake up. The live URL is in [deployed.md](deployed.md).
 
 ## Reproducibility
 
