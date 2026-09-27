@@ -38,6 +38,17 @@ def test_answers_are_trimmed_to_the_word_limit_at_a_sentence_end():
     assert limit_words("short answer [1].", 25) == "short answer [1]."
 
 
+def test_markdown_emphasis_and_headings_are_removed():
+    result = process_answer("## Answer\nThe minimum is **14 characters** [S1].", 5, 200)
+    assert result.text == "Answer\nThe minimum is 14 characters [1]."
+
+
+def test_prompt_explains_how_to_use_revision_history():
+    prompt = system_prompt(200)
+    assert "Revision History" in prompt and "changes, updates, or earlier versions" in prompt
+    assert "Only if no excerpt contains it" in prompt
+
+
 def test_prompt_labels_each_excerpt_with_its_source():
     meta = {"doc_id": "VB-POL-002", "title": "Password Policy", "version": "3.1", "section": "4.1"}
     prompt = build_user_prompt("How long?", [(meta, "Minimum length: 14 characters")])

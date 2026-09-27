@@ -101,6 +101,7 @@ class PolicyAssistant:
                 "section": chunk.metadata["section"],
                 "vector_score": chunk.vector_score,
                 "lexical_score": chunk.lexical_score,
+                "added_for": chunk.added_for,
             }
             for chunk in chunks
         ]

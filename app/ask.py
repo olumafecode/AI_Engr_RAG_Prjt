@@ -31,6 +31,13 @@ def main(argv: list[str] | None = None) -> None:
         print("\nSources:")
         for citation in answer.citations:
             print(f"  [{citation.number}] {citation.doc_id} {citation.title}, {citation.section}")
+    print("\nRetrieved excerpts (sent to the model unless the relevance gate refused):")
+    for rank, item in enumerate(answer.retrieved, start=1):
+        print(
+            f"  S{rank}  {item['chunk_id']:15} vector {item['vector_score']:.3f}  "
+            f"bm25 {item['lexical_score']:5.2f}  {item['section']}"
+            + (f"  (added: {item['added_for']})" if item.get("added_for") else "")
+        )
     status = f"refused ({answer.refusal_reason})" if answer.refused else "answered"
     timing = answer.latency_ms
     print(
