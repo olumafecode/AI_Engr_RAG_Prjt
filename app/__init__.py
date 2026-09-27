@@ -10,21 +10,28 @@ from flask import Flask
 from app.config import Settings
 from app.routes import bp
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
-def create_app(settings: Settings | None = None) -> Flask:
-    """Build and configure the Flask application."""
+def create_app(settings: Settings | None = None, assistant=None) -> Flask:
+    """Build and configure the Flask application.
+
+    Tests can pass a ready-made assistant; otherwise one is created on the first /chat request.
+    """
     settings = settings or Settings.from_env()
 
     logging.basicConfig(
         level=settings.log_level,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    for noisy in ("httpx", "httpx2", "chromadb"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     random.seed(settings.seed)
 
     flask_app = Flask(__name__)
     flask_app.config["SETTINGS"] = settings
     flask_app.config["VERSION"] = __version__
+    if assistant is not None:
+        flask_app.extensions["policy_assistant"] = assistant
     flask_app.register_blueprint(bp)
     return flask_app

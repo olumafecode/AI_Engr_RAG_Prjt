@@ -19,15 +19,23 @@ Ingestion (built in Stage 2; runs at build time)
     -> store vectors, text, and metadata in Chroma (cosine distance)
     -> write index_manifest.json and chunks.jsonl
 
-Question answering (per request; Stage 3)
+Question answering (built in Stage 3; per request)
   POST /chat {"question": ...}
-    -> embed the question
-    -> retrieve top-k chunks from Chroma (optional rerank)
-    -> relevance gate: refuse if nothing is similar enough
-    -> build prompt with labeled sources
-    -> LLM (Groq, llama-3.1-8b-instant, temperature 0, capped length)
-    -> check citations against the retrieved chunks
-    -> JSON: answer, citations (doc ID, title, section, snippet, link), latency
+    -> embed the question; score every chunk in Chroma (cosine)
+    -> score every chunk with BM25 keywords
+    -> fuse the two rankings with reciprocal rank fusion; keep the top 5
+    -> relevance gate: refuse without calling the LLM if the best
+       cosine similarity is below 0.55
+    -> prompt: rules, then excerpts labeled [S1]..[S5] with doc ID,
+       title, version, and section, then the question
+    -> LLM (Groq, openai/gpt-oss-20b, reasoning effort low,
+       temperature 0, seed 42, at most 1024 completion tokens)
+    -> guardrails in code: detect refusals, drop citation labels that
+       were not retrieved, renumber the rest [1], [2]..., retry once if
+       an answer has no citation (then refuse), trim to 200 words
+    -> JSON: answer, refusal status and reason, numbered citations
+       (doc ID, title, section, snippet, link), retrieved chunk scores,
+       latency for retrieval, generation, and total
 ```
 
 ## Design Decisions
@@ -41,10 +49,13 @@ Question answering (per request; Stage 3)
 | Token counting | Regex tokenizer (words, numbers, and punctuation marks each count as one) | Needs no download and gives identical counts on every machine. It slightly undercounts the model's WordPiece tokens, so the 350 limit leaves headroom under bge-small's 512-token input limit. |
 | Embedding model | BAAI/bge-small-en-v1.5 through fastembed | Free, runs locally with no rate limits, gives deterministic vectors, and uses ONNX instead of PyTorch, so it fits in the 512 MB of a free Render instance. Each chunk is embedded with a short header ("title (doc ID), section") so that short chunks keep their context. Queries use the retrieval instruction recommended for bge models. |
 | Vector store | Chroma, persistent and local, cosine distance | Named in the brief, file-based, and needs no separate service. The index is rebuilt from scratch on every run so it always matches the corpus; a manifest records the settings and a corpus fingerprint, and `/health` reports whether the index is out of date. |
-| Retrieval | Top-k with k = 5 | Covers questions that need two documents without flooding the prompt. Confirmed or changed by the ablation in the evaluation. |
-| LLM | Groq free tier, llama-3.1-8b-instant | Very low latency helps the latency metric. The OpenAI-compatible API means OpenRouter can be swapped in through configuration. |
-| Prompt format | System rules, then numbered context blocks labeled with doc ID and section, then the question | Labeled blocks make it easy for the model to cite, and easy for code to check the citations. |
-| Guardrails | Similarity threshold before the LLM call, prompt-level refusal rule, token cap, and post-generation citation check | Refusal and citation rules are enforced in code as well as in the prompt, so they do not depend on the model alone. |
+| Retrieval | Hybrid: vector similarity and BM25 keyword scores, fused with reciprocal rank fusion (k = 60, top 30 of each list), top 5 kept | In the calibration run, vector search alone ranked "Counterfeit notes" first for "Who do I call if my card is stolen?", because the answer sits in a long contacts table. Keyword matching on "stolen" and "card" pulls up the Fraud Desk passages. RRF combines the two rankings without having to put cosine and BM25 scores on the same scale. A vector-only mode is kept for the ablation. |
+| Top-k | k = 5 | Covers questions that need two documents without flooding the prompt. Confirmed or changed by the ablation in the evaluation. |
+| Relevance gate | Refuse without calling the LLM when the best cosine similarity is below 0.55 | Set from a calibration run (next section). The gate is deliberately cautious: it only blocks questions that are clearly unrelated, because a wrongly refused policy question cannot be recovered, while a borderline question that passes still meets the prompt's refusal rule. |
+| LLM | Groq free tier, openai/gpt-oss-20b, reasoning effort low, temperature 0, seed 42 | The original choice, llama-3.1-8b-instant, was retired from Groq's free tier on 16 August 2026, and the first live request returned `model_not_found`. Groq's recommended replacement is gpt-oss-20b. It is a reasoning model whose hidden reasoning tokens count against the completion budget, so reasoning effort is set to low and the budget raised to 1024 tokens; the 200-word answer limit is still enforced in code. An empty reply is reported as an error rather than treated as a refusal. Temperature 0 with a fixed seed keeps answers as repeatable as the API allows, and the model name is a setting, so another OpenAI-compatible model can be swapped in without code changes. |
+| Prompt format | System rules, then excerpts labeled [S1] to [S5] with doc ID, title, version, and section, then the question | Short labels are easy for the model to cite and easy for code to check. The rules require a citation on every sentence, the exact refusal sentence when the excerpts do not answer the question or it concerns another organization, the current rule when a revision history lists an older value, and at most 200 words. Instructions inside excerpts or questions are to be ignored. |
+| Guardrails | Relevance gate, prompt refusal rule, output token cap, and code checks after generation | Code drops citation labels that were not retrieved, renumbers the rest, retries once if an answer has no citations and refuses if it still has none, and trims answers over 200 words at a sentence boundary. Refusal and citation rules therefore do not depend on the model alone. |
+| Source links | `/docs/<doc_id>` serves each policy: PDFs and HTML as the original files, Markdown and text rendered with the same section anchors used by the chunks | Every citation link opens the source at the cited section (for example `#41-minimum-requirements-by-account-type`, or `#page=3` for PDFs). |
 | Hosting | Render free web service | Named in the brief. Deploys are triggered by CI only after tests pass. |
 | CI/CD | GitHub Actions | Lint, build check, and tests on every push and pull request; deploy on `main`. |
 
@@ -117,6 +128,25 @@ With 20 in-scope questions, each question is worth 5 percentage points.
 | Chunks with the window strategy (350 / 50) | 100, median 333 tokens |
 
 Because almost every section is shorter than the chunk size, changing the chunk size barely affects the heading strategy. The chunking ablation therefore compares the two strategies (heading-aware sections versus fixed windows) rather than only varying the size.
+
+## Relevance Threshold Calibration
+
+Before choosing the gate threshold, ten questions were run against the index with the real embedding model, recording the best cosine similarity for each (vector search, top 1).
+
+| Group | Question | Best similarity |
+|---|---|---|
+| Off topic | What is the capital of France? | 0.475 |
+| Off topic | Write a poem about the ocean | 0.435 |
+| Off topic | What is the current price of Bitcoin? | 0.586 |
+| Off topic | How do I bake sourdough bread? | 0.437 |
+| Sounds relevant, not covered | What is Veridane Bank's share price? | 0.761 |
+| Sounds relevant, not covered | How much maternity leave do Google employees get? | 0.677 |
+| In scope | Can I work from home three days a week? | 0.662 |
+| In scope | Who do I call if my card is stolen? | 0.621 |
+| In scope | How long do we keep CCTV footage? | 0.736 |
+| In scope | What happens if I fail two phishing tests? | 0.631 |
+
+The lowest in-scope score was 0.621, and three of the four off-topic questions scored below 0.48. A threshold of 0.55 blocks those three while leaving a margin of about 0.07 below the weakest in-scope question. The Bitcoin question (0.586) and both "sounds relevant" questions pass the gate, and must be refused by the prompt rule instead. The two "sounds relevant" questions score as high as real policy questions, which shows that a similarity threshold alone cannot enforce the corpus boundary. The evaluation set includes questions of both kinds so that each layer is measured.
 
 ## Evaluation Approach and Results
 

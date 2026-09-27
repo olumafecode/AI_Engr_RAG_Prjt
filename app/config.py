@@ -20,6 +20,11 @@ def _int(name: str, default: int) -> int:
     return int(value) if value not in (None, "") else default
 
 
+def _float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    return float(value) if value not in (None, "") else default
+
+
 def _path(name: str, default: str) -> Path:
     return PROJECT_ROOT / os.getenv(name, default)
 
@@ -34,20 +39,28 @@ class Settings:
     chroma_dir: Path = PROJECT_ROOT / ".chroma"
     model_cache_dir: Path = PROJECT_ROOT / ".cache" / "fastembed"
 
-    # Ingestion and retrieval
+    # Ingestion
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     query_prefix: str = BGE_QUERY_PREFIX
     collection_name: str = "veridane_policies"
     chunk_strategy: str = "heading"
     chunk_size: int = 350
     chunk_overlap: int = 50
+
+    # Retrieval
     top_k: int = 5
+    retrieval_mode: str = "hybrid"
+    candidate_pool: int = 30
+    relevance_threshold: float = 0.55
 
     # Generation
     groq_api_key: str = field(default="", repr=False)
     llm_base_url: str = "https://api.groq.com/openai/v1"
-    llm_model: str = "llama-3.1-8b-instant"
-    judge_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-20b"
+    judge_model: str = "openai/gpt-oss-120b"
+    llm_reasoning_effort: str = "low"  # gpt-oss models only; leave empty for other models
+    llm_max_tokens: int = 1024  # covers the hidden reasoning tokens plus the answer
+    llm_timeout: float = 30.0
 
     # Guardrails
     max_question_chars: int = 1000
@@ -69,10 +82,16 @@ class Settings:
             chunk_size=_int("CHUNK_SIZE", defaults.chunk_size),
             chunk_overlap=_int("CHUNK_OVERLAP", defaults.chunk_overlap),
             top_k=_int("TOP_K", defaults.top_k),
+            retrieval_mode=os.getenv("RETRIEVAL_MODE", defaults.retrieval_mode),
+            candidate_pool=_int("CANDIDATE_POOL", defaults.candidate_pool),
+            relevance_threshold=_float("RELEVANCE_THRESHOLD", defaults.relevance_threshold),
             groq_api_key=os.getenv("GROQ_API_KEY", ""),
             llm_base_url=os.getenv("LLM_BASE_URL", defaults.llm_base_url),
             llm_model=os.getenv("LLM_MODEL", defaults.llm_model),
             judge_model=os.getenv("JUDGE_MODEL", defaults.judge_model),
+            llm_reasoning_effort=os.getenv("LLM_REASONING_EFFORT", defaults.llm_reasoning_effort),
+            llm_max_tokens=_int("LLM_MAX_TOKENS", defaults.llm_max_tokens),
+            llm_timeout=_float("LLM_TIMEOUT", defaults.llm_timeout),
             max_question_chars=_int("MAX_QUESTION_CHARS", defaults.max_question_chars),
             max_answer_words=_int("MAX_ANSWER_WORDS", defaults.max_answer_words),
         )

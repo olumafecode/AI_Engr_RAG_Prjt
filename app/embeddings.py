@@ -28,7 +28,10 @@ class Embedder(Protocol):
 
 class FastEmbedEmbedder:
     def __init__(self, model_name: str, cache_dir: Path, query_prefix: str = "") -> None:
+        import onnxruntime
         from fastembed import TextEmbedding  # imported lazily: it loads ONNX Runtime
+
+        onnxruntime.set_default_logger_severity(3)  # hide hardware-discovery warnings
 
         cache_dir.mkdir(parents=True, exist_ok=True)
         self._model = TextEmbedding(model_name=model_name, cache_dir=str(cache_dir))

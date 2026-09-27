@@ -11,8 +11,8 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 | 0. Repository, environment, and CI | Done |
 | 1. Policy corpus and success metrics | Done |
 | 2. Ingestion and indexing | Done |
-| 3. Retrieval and generation | Next |
-| 4. Web application | Placeholder page and API contract in place |
+| 3. Retrieval and generation | Done |
+| 4. Web application | Chat page, `/chat`, `/docs`, and `/health` working; polish next |
 | 5. Deployment to Render | Workflow ready; waiting for a Render service |
 | 6. Evaluation | Metrics and targets defined |
 | 7. Documentation and demo | In progress |
@@ -32,10 +32,14 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 │   ├── vector_store.py      Chroma collection wrapper
 │   ├── index_manifest.py    Records how the index was built
 │   ├── ingest.py            Builds the index: python -m app.ingest
-│   ├── retrieval.py         Top-k search over the index
+│   ├── lexical.py           BM25 keyword index for hybrid search
+│   ├── retrieval.py         Hybrid top-k search (vector + BM25, fused with RRF)
+│   ├── generation.py        Prompt, Groq client, citation and length guardrails
+│   ├── assistant.py         The question-answering pipeline behind /chat
 │   ├── search.py            Command-line search: python -m app.search
-│   ├── routes.py            /, /chat, /health
-│   └── templates/index.html Chat page
+│   ├── ask.py               Command-line question answering: python -m app.ask
+│   ├── routes.py            /, /chat, /docs/<id>, /health
+│   └── templates/           Chat page and source-document page
 ├── corpus/                  The 14 policy documents the app answers from
 ├── corpus_src/              Markdown sources for the three PDF policies
 ├── scripts/
@@ -102,8 +106,18 @@ Check retrieval from the command line:
 
 ```bash
 python -m app.search "How long is mandatory block leave?"
-python -m app.search "Who approves international travel?" --k 3
+python -m app.search "Who do I call if my card is stolen?" --mode vector
 ```
+
+## Ask a question
+
+Answers need a Groq API key (free at console.groq.com) in `.env` as `GROQ_API_KEY`.
+
+```bash
+python -m app.ask "How long is mandatory block leave?"
+```
+
+This prints the answer, its numbered sources, whether it was refused and why, and the retrieval and generation times.
 
 ## Run the app
 
@@ -116,18 +130,45 @@ Then open http://127.0.0.1:5000. In production (Linux, including Render) the app
 | Endpoint | Method | Purpose |
 |---|---|---|
 | `/` | GET | Chat page |
-| `/chat` | POST | Takes `{"question": "..."}` and returns an answer with citations. Returns 501 until Stage 3 is built. |
-| `/health` | GET | Returns `{"status": "ok", ...}` with the app version, corpus document count, and index status (built, chunk count, up to date with the corpus) |
+| `/chat` | POST | Takes `{"question": "..."}` and returns the answer, numbered citations (document, section, snippet, link), refusal status, and timings |
+| `/docs/<doc_id>` | GET | Opens a source policy at the cited section; citation links point here |
+| `/health` | GET | Returns `{"status": "ok", ...}` with the app version, corpus document count, index status, and whether an LLM key is configured |
+
+Example `/chat` call from PowerShell:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:5000/chat -ContentType "application/json" -Body '{"question": "How long is mandatory block leave?"}'
+```
+
+A successful response looks like this (shortened; your timings will differ):
+
+```json
+{
+  "answer": "Staff in sensitive roles must take at least 10 consecutive business days of leave once a year [1].",
+  "refused": false,
+  "refusal_reason": null,
+  "citations": [
+    {"number": 1, "doc_id": "VB-POL-006", "title": "Internal Control Policy",
+     "section": "6. Key Control Requirements > 6.5 Mandatory block leave",
+     "snippet": "Staff in sensitive roles must take at least 10 consecutive business days...",
+     "url": "/docs/VB-POL-006#page=3"}
+  ],
+  "latency_ms": {"retrieval": 40, "generation": 650, "total": 690}
+}
+```
+
+Refused questions return `"refused": true` with the message "I can only answer questions about Veridane Bank policies, and I couldn't find the answer in them."
+
 
 ## Tests and checks
 
 ```bash
-pytest -q                       # app, corpus, parsing, chunking, and index tests
+pytest -q                       # app, corpus, parsing, chunking, index, and pipeline tests
 ruff check .                    # lint
 python -m scripts.corpus_stats  # corpus word and page counts
 ```
 
-The test suite uses an offline stand-in embedder, so it runs without downloading the model.
+The test suite uses an offline stand-in embedder and a scripted stand-in for the LLM, so it needs neither the model download nor an API key.
 
 ## The corpus
 
@@ -155,9 +196,13 @@ All settings are read from environment variables, with defaults in `app/config.p
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | 350 / 50 tokens | Stage 2 |
 | `CHROMA_DIR` / `MODEL_CACHE_DIR` | .chroma / .cache/fastembed | Stage 2 |
 | `TOP_K` | 5 | Stage 2 |
+| `RETRIEVAL_MODE` | hybrid (or vector) | Stage 3 |
+| `RELEVANCE_THRESHOLD` | 0.55 | Stage 3 |
+| `MAX_ANSWER_WORDS` / `LLM_MAX_TOKENS` | 200 words / 1024 tokens (reasoning plus answer) | Stage 3 |
+| `LLM_REASONING_EFFORT` | low (gpt-oss models; leave empty for other models) | Stage 3 |
 | `GROQ_API_KEY` | (none) | Stage 3 |
-| `LLM_MODEL` | llama-3.1-8b-instant | Stage 3 |
-| `JUDGE_MODEL` | llama-3.3-70b-versatile | Stage 6 |
+| `LLM_MODEL` / `LLM_BASE_URL` | openai/gpt-oss-20b / Groq | Stage 3 |
+| `JUDGE_MODEL` | openai/gpt-oss-120b | Stage 6 |
 
 ## CI/CD
 

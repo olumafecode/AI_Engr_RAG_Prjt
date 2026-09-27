@@ -1,5 +1,4 @@
 # Runtime dependencies for the Veridane Policy Assistant.
-# Stage 3 adds the LLM client.
 flask==3.1.3
 gunicorn==26.2.0
 python-dotenv==1.2.3
@@ -8,3 +7,4 @@ pypdf==6.19.0
 pdfplumber==0.11.10
 chromadb==1.5.9
 fastembed==0.8.1
+openai==3.19.2

@@ -110,6 +110,8 @@
     }
     .answer[hidden] { display: none; }
     .answer.error { border-left-color: var(--error); }
+    .answer.refused { border-left-color: var(--muted); }
+    .timing { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.85rem; }
     .answer-text { margin: 0; white-space: pre-wrap; }
     .sources { margin-top: 1.25rem; }
     .sources h2 { font-size: 1rem; margin: 0 0 0.5rem; }
@@ -121,6 +123,7 @@
       text-decoration: none;
     }
     .source-id:hover { text-decoration: underline; }
+    .section-name { margin: 0.1rem 0 0; font-size: 0.9rem; }
     .snippet { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.9rem; }
   </style>
 </head>
@@ -155,6 +158,7 @@
         <h2>Sources</h2>
         <div id="source-list"></div>
       </div>
+      <p class="timing" id="timing" hidden></p>
     </section>
   </main>
 
@@ -180,9 +184,12 @@
       }
     }
 
-    function showAnswer(text, citations, isError) {
+    const timingEl = document.getElementById("timing");
+
+    function showAnswer(text, citations, state, latency) {
       answerEl.hidden = false;
-      answerEl.classList.toggle("error", isError);
+      answerEl.classList.toggle("error", state === "error");
+      answerEl.classList.toggle("refused", state === "refused");
       answerText.textContent = text;
       sourceList.replaceChildren();
       sourcesEl.hidden = !citations || citations.length === 0;
@@ -191,9 +198,15 @@
         item.className = "source";
         const link = document.createElement("a");
         link.className = "source-id";
-        link.href = citation.url || "#";
-        link.textContent = `${citation.doc_id} ${citation.title || ""} ${citation.section || ""}`.trim();
+        link.href = citation.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = `[${citation.number}] ${citation.doc_id} ${citation.title}`;
         item.appendChild(link);
+        const section = document.createElement("p");
+        section.className = "section-name";
+        section.textContent = citation.section;
+        item.appendChild(section);
         if (citation.snippet) {
           const snippet = document.createElement("p");
           snippet.className = "snippet";
@@ -202,6 +215,10 @@
         }
         sourceList.appendChild(item);
       });
+      timingEl.hidden = !latency;
+      if (latency) {
+        timingEl.textContent = `Answered in ${(latency.total / 1000).toFixed(1)} s`;
+      }
     }
 
     form.addEventListener("submit", async (event) => {
@@ -218,12 +235,13 @@
         });
         const body = await response.json();
         if (response.ok) {
-          showAnswer(body.answer, body.citations, false);
+          const state = body.refused ? "refused" : "answered";
+          showAnswer(body.answer, body.citations, state, body.latency_ms);
         } else {
-          showAnswer(body.error || "The request failed.", [], true);
+          showAnswer(body.error || "The request failed.", [], "error", null);
         }
       } catch {
-        showAnswer("The request didn't reach the service. Check your connection and try again.", [], true);
+        showAnswer("The request didn't reach the service. Check your connection and try again.", [], "error", null);
       } finally {
         askButton.disabled = false;
         askButton.textContent = "Ask";

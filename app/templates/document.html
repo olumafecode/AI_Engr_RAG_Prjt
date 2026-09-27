@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ document.doc_id }} {{ document.title }}</title>
+  <style>
+    :root { --paper: #f4f7f6; --ink: #15201c; --muted: #587268; --rule: #d3ddd9; --viridian: #0e5a45; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #0f1614; --ink: #e4ece9; --muted: #93aba3; --rule: #2a3834; --viridian: #5fb39a; }
+    }
+    body { margin: 0; background: var(--paper); color: var(--ink);
+      font-family: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.55; }
+    main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    .doc-id { margin: 0; color: var(--viridian); font-weight: 600; }
+    h1 { margin: 0.2rem 0 0.5rem; font-size: 2rem; line-height: 1.15; }
+    .meta { color: var(--muted); margin: 0 0 2rem; font-size: 0.9rem; }
+    h2 { margin: 2rem 0 0.5rem; font-size: 1.25rem; }
+    h3 { margin: 1.25rem 0 0.4rem; font-size: 1.05rem; }
+    h2:target, h3:target { background: color-mix(in srgb, var(--viridian) 15%, transparent); }
+    p { margin: 0 0 0.5rem; }
+    .bullet { padding-left: 1.1rem; text-indent: -0.8rem; }
+    .row { font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--rule); padding-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="doc-id">{{ document.doc_id }}</p>
+    <h1>{{ document.title }}</h1>
+    <p class="meta">Version {{ document.metadata.version }}, effective {{ document.metadata.effective_date }}.
+      Owner: {{ document.metadata.owner }}.</p>
+    {% set ns = namespace(parent="") %}
+    {% for section in document.sections %}
+      {% set parts = section.heading.split(" > ") %}
+      {% if parts | length > 1 %}
+        {% if parts[0] != ns.parent %}<h2>{{ parts[0] }}</h2>{% set ns.parent = parts[0] %}{% endif %}
+        <h3{% if section.anchor %} id="{{ section.anchor }}"{% endif %}>{{ parts[-1] }}</h3>
+      {% else %}
+        {% set ns.parent = parts[0] %}
+        <h2{% if section.anchor %} id="{{ section.anchor }}"{% endif %}>{{ parts[0] }}</h2>
+      {% endif %}
+      {% for line in section.text.splitlines() %}
+        {% if line.startswith("- ") %}
+          <p class="bullet">&bull; {{ line[2:] }}</p>
+        {% elif " | " in line %}
+          <p class="row">{{ line }}</p>
+        {% else %}
+          <p>{{ line }}</p>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </main>
+</body>
+</html>

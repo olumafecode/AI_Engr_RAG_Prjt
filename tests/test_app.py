@@ -1,13 +1,30 @@
-"""Smoke tests for the web application's routes."""
+"""Route tests. The /chat tests inject an assistant backed by the offline index and a fake LLM."""
+
+from dataclasses import replace
+
+import pytest
+
+from app import create_app
+from app.assistant import PolicyAssistant
+from tests.conftest import FakeChatModel
 
 
-def test_health_reports_ok_and_counts_corpus(client):
+@pytest.fixture()
+def chat_client(hash_settings):
+    settings = replace(hash_settings, relevance_threshold=0.0)
+    assistant = PolicyAssistant(settings, chat_model=FakeChatModel("Fourteen characters [S1]."))
+    app = create_app(settings, assistant=assistant)
+    return app.test_client()
+
+
+def test_health_reports_ok_corpus_index_and_llm(client):
     response = client.get("/health")
     assert response.status_code == 200
     body = response.get_json()
     assert body["status"] == "ok"
     assert body["corpus_documents"] == 14
     assert "built" in body["index"]
+    assert isinstance(body["llm_configured"], bool)
 
 
 def test_index_serves_chat_page(client):
@@ -17,21 +34,47 @@ def test_index_serves_chat_page(client):
 
 
 def test_chat_rejects_non_json_body(client):
-    response = client.post("/chat", data="hello", content_type="text/plain")
-    assert response.status_code == 400
+    assert client.post("/chat", data="hello", content_type="text/plain").status_code == 400
 
 
 def test_chat_rejects_empty_question(client):
-    response = client.post("/chat", json={"question": "   "})
-    assert response.status_code == 400
+    assert client.post("/chat", json={"question": "   "}).status_code == 400
 
 
 def test_chat_rejects_overlong_question(client, settings):
-    response = client.post("/chat", json={"question": "x" * (settings.max_question_chars + 1)})
-    assert response.status_code == 400
+    question = "x" * (settings.max_question_chars + 1)
+    assert client.post("/chat", json={"question": question}).status_code == 400
 
 
-def test_chat_valid_question_reaches_pipeline_placeholder(client):
-    # Until Stage 3 wires in retrieval and generation, a valid question returns 501.
-    response = client.post("/chat", json={"question": "How long is mandatory block leave?"})
-    assert response.status_code == 501
+def test_chat_returns_answer_with_citations_and_timing(chat_client):
+    response = chat_client.post("/chat", json={"question": "Minimum password length?"})
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["answer"] == "Fourteen characters [1]."
+    assert body["refused"] is False
+    citation = body["citations"][0]
+    assert {"number", "doc_id", "title", "section", "snippet", "url"} <= set(citation)
+    assert body["latency_ms"]["total"] >= 0
+
+
+def test_chat_explains_a_missing_index(tmp_path, settings):
+    app = create_app(replace(settings, chroma_dir=tmp_path, embedding_model="hash"))
+    response = app.test_client().post("/chat", json={"question": "Minimum password length?"})
+    assert response.status_code == 503
+    assert "python -m app.ingest" in response.get_json()["error"]
+
+
+def test_docs_route_renders_text_documents_with_section_anchors(client):
+    response = client.get("/docs/VB-POL-002")
+    assert response.status_code == 200
+    assert b'id="41-minimum-requirements-by-account-type"' in response.data
+
+
+def test_docs_route_serves_pdf_and_html_sources(client):
+    assert client.get("/docs/VB-POL-007").mimetype == "application/pdf"
+    assert client.get("/docs/VB-POL-008").mimetype == "text/html"
+
+
+@pytest.mark.parametrize("doc_id", ["VB-POL-999", "..%2Fapp", "not-a-doc"])
+def test_docs_route_rejects_unknown_documents(client, doc_id):
+    assert client.get(f"/docs/{doc_id}").status_code == 404
