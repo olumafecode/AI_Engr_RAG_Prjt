@@ -1,0 +1,16 @@
+[project]
+name = "veridane-policy-assistant"
+version = "0.1.0"
+description = "RAG application that answers staff questions about Veridane Bank policies."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
