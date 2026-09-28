@@ -34,6 +34,44 @@ def metrics_table(metrics: dict) -> list[str]:
     return lines
 
 
+def answer_stats(records: list[dict]) -> dict | None:
+    """What the answered in-scope questions looked like, to explain differences between runs."""
+    answered = [r for r in records if r["in_scope"] and not r.get("error") and not r.get("refused")]
+    if not answered:
+        return None
+    count = len(answered)
+    return {
+        "Mean words per answer": round(sum(r["words"] for r in answered) / count),
+        "Mean citations per answer": round(sum(len(r["citations"]) for r in answered) / count, 1),
+        "Mean documents cited per answer": round(
+            sum(len(r["cited_docs"]) for r in answered) / count, 1
+        ),
+        "Answers citing a document outside the acceptable sources": sum(
+            1 for r in answered if r.get("citation_docs_ok") is False
+        ),
+        "Answers whose citations the judge rejected": sum(
+            1 for r in answered if r.get("judge") and not r["judge"]["citations_correct"]
+        ),
+    }
+
+
+def stats_table(columns: list[tuple[str, list[dict]]]) -> list[str]:
+    stats = [(name, answer_stats(records)) for name, records in columns]
+    if not any(item for _, item in stats):
+        return []
+    lines = [
+        "Answer characteristics (answered in-scope questions):",
+        "",
+        "| Measure | " + " | ".join(name for name, _ in stats) + " |",
+        "|---|" + "---|" * len(stats),
+    ]
+    labels = next(item for _, item in stats if item)
+    for label in labels:
+        cells = [str(item[label]) if item else "not run" for _, item in stats]
+        lines.append(f"| {label} | " + " | ".join(cells) + " |")
+    return lines
+
+
 def earlier_runs(base: Path) -> list[tuple[str, dict | None, dict | None, dict | None]]:
     """(name, quality summary, latency summary, judge agreement) for each archived run."""
     runs = []
@@ -167,10 +205,19 @@ def write_report(base: Path = RESULTS_DIR) -> None:
         out.append("")
 
     if runs:
+        run_records = [
+            (
+                name,
+                (read_json("quality_results.json", base / "runs" / name) or {}).get("records", []),
+            )
+            for name, _, _, _ in runs
+        ] + [("Current run", records)]
         out += [
             "## Comparison with earlier runs",
             "",
             *comparison_table(runs, quality, latency),
+            "",
+            *stats_table(run_records),
             "",
         ]
 

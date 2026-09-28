@@ -13,7 +13,7 @@ from app.corpus_utils import list_documents
 from app.index_manifest import index_status
 from app.routes import bp
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 
 def create_app(settings: Settings | None = None, assistant=None) -> Flask:

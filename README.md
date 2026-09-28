@@ -202,7 +202,7 @@ All settings are read from environment variables, with defaults in `app/config.p
 | `RELEVANCE_THRESHOLD` | 0.55 | Stage 3 |
 | `MAX_ANSWER_WORDS` / `LLM_MAX_TOKENS` | 200 words / 1024 tokens (reasoning plus answer) | Stage 3 |
 | `LLM_REASONING_EFFORT` | low (gpt-oss models; leave empty for other models) | Stage 3 |
-| `ANSWER_STYLE` | complete (or concise, the first evaluation run's wording) | Stage 6 |
+| `ANSWER_STYLE` | concise (or complete; the two are compared in the evaluation) | Stage 6 |
 | `GROQ_API_KEY` | (none) | Stage 3 |
 | `LLM_MODEL` / `LLM_BASE_URL` | openai/gpt-oss-20b / Groq | Stage 3 |
 | `JUDGE_MODEL` | openai/gpt-oss-120b | Stage 6 |

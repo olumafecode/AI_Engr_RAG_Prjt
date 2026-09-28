@@ -149,3 +149,41 @@ def test_archiving_a_run_keeps_it_and_the_report_compares_runs(tmp_path):
     assert "## Comparison with earlier runs" in report
     assert "run1: concise, Current run: complete" in report
     assert "made on the answers of run1" in report
+
+
+def test_an_archived_run_can_be_restored_as_the_current_one(tmp_path):
+    from evaluation.archive import archive_run, restore_run
+    from evaluation.common import write_json
+
+    summary = summarize([_record("a", True)], 200)
+    summary["settings"] = {
+        "answer_model": "m",
+        "reasoning_effort": "low",
+        "judge_model": "j",
+        "retrieval_mode": "hybrid",
+        "top_k": 5,
+        "chunk_strategy": "heading",
+        "relevance_threshold": 0.55,
+        "answer_style": "concise",
+    }
+    write_json("quality_summary.json", summary, tmp_path)
+    write_json("quality_results.json", {"records": [_record("a", True)]}, tmp_path)
+    archive_run("run1", tmp_path)
+    write_json(
+        "quality_summary.json",
+        {**summary, "settings": {**summary["settings"], "answer_style": "complete"}},
+        tmp_path,
+    )
+    write_json("quality_results.json", {"records": [_record("a", True, cites=False)]}, tmp_path)
+
+    import pytest
+
+    with pytest.raises(FileExistsError):
+        restore_run("run1", tmp_path)  # the current run must be archived first
+    archive_run("run2-complete", tmp_path)
+    restore_run("run1", tmp_path)
+    assert (tmp_path / "quality_summary.json").is_file()
+    assert not (tmp_path / "runs" / "run1").exists()
+    report = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert "run2-complete: complete, Current run: concise" in report
+    assert "Answers whose citations the judge rejected | 1 | 0 |" in report

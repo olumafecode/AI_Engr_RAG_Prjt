@@ -120,8 +120,13 @@ def test_concise_style_is_exactly_the_first_evaluation_runs_prompt():
     assert system_prompt(200, "concise") == run1
 
 
+def test_concise_is_the_default_style(settings):
+    assert settings.answer_style == "concise"
+    assert system_prompt(200) == system_prompt(200, "concise")
+
+
 def test_complete_style_asks_for_details_and_exact_citation_format():
-    prompt = system_prompt(200)
+    prompt = system_prompt(200, "complete")
     assert "every condition, exception, approval, limit, deadline, and contact" in prompt
     assert "exactly like [S2] or [S1][S3]" in prompt
     assert "Leave out anything the excerpts do not state" in prompt

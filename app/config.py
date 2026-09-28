@@ -71,7 +71,7 @@ class Settings:
     llm_max_tokens: int = 1024  # covers the hidden reasoning tokens plus the answer
     llm_timeout: float = 30.0
 
-    answer_style: str = "complete"  # or "concise", the wording of the first evaluation run
+    answer_style: str = "concise"  # or "complete"; see the prompt-variant results
 
     # Guardrails
     max_question_chars: int = 1000

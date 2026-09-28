@@ -7,6 +7,11 @@ Moves the run's result files into evaluation/results/runs/run1/, so the next
 quality and latency runs start fresh and the report can compare the runs side
 by side. The ablation results stay where they are: they measure retrieval only,
 which a change to the answer prompt does not affect.
+
+To make an archived run the current one again (for example, after deciding to
+keep its settings), archive the current run first, then restore:
+    python -m evaluation.archive run2-complete
+    python -m evaluation.archive --restore run1
 """
 
 from __future__ import annotations
@@ -47,15 +52,33 @@ def archive_run(name: str, base: Path = RESULTS_DIR) -> list[str]:
     return present
 
 
+def restore_run(name: str, base: Path = RESULTS_DIR) -> list[str]:
+    source = base / "runs" / name
+    if not source.is_dir():
+        raise FileNotFoundError(f"No archived run called {name!r}")
+    if (base / "quality_summary.json").is_file():
+        raise FileExistsError("Archive the current run first, so it is not overwritten")
+    present = [file for file in RUN_FILES if (source / file).is_file()]
+    for file in present:
+        shutil.move(str(source / file), str(base / file))
+    if not any(source.iterdir()):
+        source.rmdir()
+    write_report(base)
+    return present
+
+
 def main(argv: list[str] | None = None) -> None:
     args = argv if argv is not None else sys.argv[1:]
-    if len(args) != 1:
-        sys.exit("Usage: python -m evaluation.archive <run name>, e.g. run1")
+    restore = bool(args) and args[0] == "--restore"
+    names = args[1:] if restore else args
+    if len(names) != 1:
+        sys.exit("Usage: python -m evaluation.archive [--restore] <run name>, e.g. run1")
     try:
-        moved = archive_run(args[0])
+        moved = restore_run(names[0]) if restore else archive_run(names[0])
     except (ValueError, FileExistsError, FileNotFoundError) as error:
         sys.exit(str(error))
-    print(f"Moved {', '.join(moved)} to evaluation/results/runs/{args[0]}/")
+    where = "evaluation/results/" if restore else f"evaluation/results/runs/{names[0]}/"
+    print(f"Moved {', '.join(moved)} to {where}")
 
 
 if __name__ == "__main__":
