@@ -183,4 +183,54 @@ An answer counts toward citation accuracy only if the judge accepts its citation
 
 ### Results
 
-The results of the first full run will be recorded here from `evaluation/results/report.md`.
+Ten of the eleven targets were met. Full results, including every question, are in `evaluation/results/report.md`.
+
+| Metric | Result | Target | Met |
+|---|---|---|---|
+| Groundedness (answered in-scope questions, n = 23) | 100% | ≥ 90% | Yes |
+| Citation accuracy (n = 23) | 91% (21 of 23) | ≥ 90% | Yes |
+| Correct, full or partial (n = 24) | 96% (23 of 24) | ≥ 85% | Yes |
+| Correct, full (n = 24) | 62% (15 of 24) | ≥ 70% | No |
+| Out-of-scope questions refused (n = 6) | 100% | 100% | Yes |
+| In-scope questions wrongly refused (n = 24) | 4% (1 of 24) | ≤ 5% | Yes |
+| Retrieval hit rate (n = 24) | 100% | ≥ 95% | Yes |
+| Answers within 200 words (n = 23) | 100% | 100% | Yes |
+| Failed requests (30 quality, 20 latency) | 0% | 0% | Yes |
+| Latency p50 on the deployed app (n = 20) | 1.16 s | ≤ 3 s | Yes |
+| Latency p95 on the deployed app (n = 20) | 1.93 s | ≤ 6 s | Yes |
+
+**Correctness.** 23 of the 24 in-scope answers matched the reference answer fully or partly, but only 15 matched it fully, so the 70% target for full matches was missed. All eight partial answers were grounded and correctly cited. Each of their reference answers includes a secondary detail alongside the main fact, such as the 3 extra days of leave after 10 years of service (q01), the approvals needed for remote work (q07), or the ban on international transfers from Tier 2 wallets (q11). The judge's explanation for each verdict is in `evaluation/results/quality_results.json`. This is also the least reliable of the judge's verdicts: on the hand-labelled sample it agreed with the human labels 70% of the time, against 100% for groundedness. The target was not changed after the run.
+
+**Refusals.** All six out-of-scope questions were refused:
+
+- two by the relevance gate (the capital of France and the poem request);
+- four by the model (another company's maternity leave, the bank's share price, the savings rate, and the prompt-injection attempt).
+
+The highest out-of-scope similarity score (0.747) was above the lowest in-scope one (0.627). This confirms the calibration finding: no threshold separates the two groups, so the gate cheaply removes clearly unrelated questions and the prompt's refusal rule does the rest.
+
+The one false refusal was q15 (who authorizes a USD 30,000 counter withdrawal). Retrieval found the right passages, but the model's answer came back twice without a valid citation, so the citation guardrail refused it rather than show an uncited answer.
+
+**Citations.** 21 of 23 answers passed. Both failures were multi-document questions (q06 and q17), where the answer draws on several excerpts; in each, one citation was either judged not to support its statement or pointed to a document outside the acceptable list.
+
+**Judge validation.** Ten judged answers were labelled by hand without seeing the judge's verdicts. The labels agreed with the judge on 100% of groundedness verdicts, 90% of citation verdicts, and 70% of correctness verdicts. The groundedness and citation figures can therefore be relied on; the full-versus-partial split less so. Mean token F1 against the reference answers was 0.51. Word overlap is only a rough check, because correct answers are often phrased differently from the reference.
+
+**Latency.** On the deployed free instance, answers took 1.16 s at the median and 1.93 s at the 95th percentile (maximum 2.22 s). The server itself took 0.87 s at the median, so network and Render's proxy account for about 0.3 s. After a quiet period, the first request took 32.7 s to wake the service, and the model then takes about 15 s to load. So the first visitor after a quiet spell waits roughly 45 to 50 seconds, and later questions take about a second.
+
+**Ablations.** Every configuration found an acceptable source for every in-scope question, so the differences are in ranking and coverage:
+
+| Configuration | MRR | Source coverage | Out-of-scope questions gated |
+|---|---|---|---|
+| Heading chunks, hybrid, k = 5 (deployed) | 0.96 | 96% | 2 of 6 |
+| Heading chunks, vector only, k = 5 | 0.93 | 93% | 2 of 6 |
+| Heading chunks, hybrid, k = 3 | 0.96 | 93% | 2 of 6 |
+| Heading chunks, hybrid, k = 8 | 0.96 | 96% | 2 of 6 |
+| Window chunks, hybrid, k = 5 | 0.98 | 93% | 3 of 6 |
+| Window chunks, vector only, k = 5 | 0.97 | 93% | 3 of 6 |
+
+- **Hybrid versus vector only:** hybrid search ranked sources higher and covered more of them.
+- **The value of k:** k = 3 lost coverage, and k = 8 added nothing over k = 5 while sending more tokens per request, which matters under an 8,000-token-per-minute limit.
+- **Window versus heading chunks:** windows ranked the first source slightly higher but covered fewer sources. Each window is about five times longer than a heading chunk (median 333 tokens against 63), so citations would point to broader passages and each request would use more of the token limit.
+
+The ablation therefore supports the deployed choice of heading chunks, hybrid search, and k = 5. No configuration gated an in-scope question.
+
+**Limitations.** The set has 30 questions, answered once. The reference answers were written by the author of the corpus. A single judge model scored every answer, and its correctness verdicts are only moderately reliable. Latency was measured from one location in one session.
