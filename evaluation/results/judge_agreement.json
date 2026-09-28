@@ -1,0 +1,70 @@
+{
+  "answers": 10,
+  "agreement": {
+    "grounded": 1.0,
+    "citations_correct": 0.9,
+    "correctness": 0.7
+  },
+  "details": [
+    {
+      "id": "q01",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": false
+    },
+    {
+      "id": "q04",
+      "grounded": true,
+      "citations_correct": false,
+      "correctness": true
+    },
+    {
+      "id": "q05",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    },
+    {
+      "id": "q08",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    },
+    {
+      "id": "q09",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    },
+    {
+      "id": "q11",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": false
+    },
+    {
+      "id": "q12",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    },
+    {
+      "id": "q20",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    },
+    {
+      "id": "q22",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": false
+    },
+    {
+      "id": "q23",
+      "grounded": true,
+      "citations_correct": true,
+      "correctness": true
+    }
+  ]
+}

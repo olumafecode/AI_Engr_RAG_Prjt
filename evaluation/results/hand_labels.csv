@@ -1,0 +1,11 @@
+id,question,your_grounded,your_citations_correct,your_correctness
+q01,How many days of annual leave does a Band D officer get?,yes,yes,full
+q04,What was the critical patch window before the latest change to the Information Security Policy?,yes,no,partial
+q05,What is the minimum password length for a privileged account?,yes,yes,full
+q08,Can tellers work from home?,yes,yes,full
+q09,What is the international per diem for a Band C employee?,yes,yes,full
+q11,What are the balance and daily transaction limits for a Tier 2 Veridane Wallet?,yes,yes,full
+q12,"When does a cash deposit need a source of funds declaration, and when is a Currency Transaction Report filed?",yes,yes,full
+q20,Who is allowed to speak to the media about a digital channel outage?,yes,yes,full
+q22,Who do I call to report a lost or stolen card?,yes,yes,full
+q23,What changed in the latest version of the Password and Access Control Policy?,yes,yes,full

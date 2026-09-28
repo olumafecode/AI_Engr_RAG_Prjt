@@ -1,0 +1,52 @@
+{
+  "metrics": {
+    "latency_p50_ms": {
+      "value": 1159,
+      "n": 20,
+      "target": 3000,
+      "comparison": "<=",
+      "met": true,
+      "description": "Median end-to-end time on the deployed app"
+    },
+    "latency_p95_ms": {
+      "value": 1926,
+      "n": 20,
+      "target": 6000,
+      "comparison": "<=",
+      "met": true,
+      "description": "95th percentile end-to-end time on the deployed app"
+    },
+    "error_rate": {
+      "value": 0.0,
+      "n": 20,
+      "target": 0.0,
+      "comparison": "<=",
+      "met": true,
+      "description": "Requests that failed"
+    }
+  },
+  "wall_ms": {
+    "min": 898,
+    "mean": 1258,
+    "max": 2220
+  },
+  "server_ms": {
+    "p50": 874,
+    "p95": 1610
+  },
+  "requests": 20,
+  "failed": 0,
+  "url": "https://veridane-policy-assistant.onrender.com",
+  "pause_seconds": 20,
+  "first_health": {
+    "wall_ms": 32719,
+    "status": 200,
+    "uptime_seconds": 4,
+    "note": "a cold start (wake-up) if uptime_seconds is small"
+  },
+  "warmup": {
+    "error": null,
+    "seconds": 15.7,
+    "state": "ready"
+  }
+}
