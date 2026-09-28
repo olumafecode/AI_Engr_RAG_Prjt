@@ -109,3 +109,43 @@ def test_retrieval_scores_find_first_acceptable_source():
         ["VB-POL-001", "VB-POL-009", "VB-POL-002"], {"VB-POL-002", "VB-POL-009"}
     )
     assert scores["hit"] and scores["reciprocal_rank"] == 0.5 and scores["coverage"] == 1.0
+
+
+def test_archiving_a_run_keeps_it_and_the_report_compares_runs(tmp_path):
+    from evaluation.archive import archive_run
+    from evaluation.common import write_json
+    from evaluation.report import write_report
+
+    settings = {
+        "answer_model": "m",
+        "reasoning_effort": "low",
+        "judge_model": "j",
+        "retrieval_mode": "hybrid",
+        "top_k": 5,
+        "chunk_strategy": "heading",
+        "relevance_threshold": 0.55,
+    }
+    first = summarize([_record("a", True, correctness="partial")], 200)
+    first["settings"] = settings
+    write_json("quality_summary.json", first, tmp_path)
+    write_json(
+        "judge_agreement.json",
+        {
+            "answers": 1,
+            "agreement": {"grounded": 1.0, "citations_correct": 1.0, "correctness": 1.0},
+        },
+        tmp_path,
+    )
+    moved = archive_run("run1", tmp_path)
+    assert "quality_summary.json" in moved
+    assert (tmp_path / "runs" / "run1" / "quality_summary.json").is_file()
+    assert not (tmp_path / "quality_summary.json").exists()
+
+    second = summarize([_record("a", True, correctness="full")], 200)
+    second["settings"] = {**settings, "answer_style": "complete"}
+    write_json("quality_summary.json", second, tmp_path)
+    write_report(tmp_path)
+    report = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert "## Comparison with earlier runs" in report
+    assert "run1: concise, Current run: complete" in report
+    assert "made on the answers of run1" in report

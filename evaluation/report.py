@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from evaluation.common import RESULTS_DIR, read_json
 
 
@@ -32,12 +34,62 @@ def metrics_table(metrics: dict) -> list[str]:
     return lines
 
 
-def write_report() -> None:
-    quality = read_json("quality_summary.json")
-    records = (read_json("quality_results.json") or {}).get("records", [])
-    latency = read_json("latency_summary.json")
-    ablation = read_json("ablation_results.json")
-    agreement = read_json("judge_agreement.json")
+def earlier_runs(base: Path) -> list[tuple[str, dict | None, dict | None, dict | None]]:
+    """(name, quality summary, latency summary, judge agreement) for each archived run."""
+    runs = []
+    for folder in sorted(path for path in (base / "runs").glob("*") if path.is_dir()):
+        runs.append(
+            (
+                folder.name,
+                read_json("quality_summary.json", folder),
+                read_json("latency_summary.json", folder),
+                read_json("judge_agreement.json", folder),
+            )
+        )
+    return runs
+
+
+def comparison_table(runs: list, quality: dict | None, latency: dict | None) -> list[str]:
+    columns = [(name, q, lat) for name, q, lat, _ in runs] + [("Current run", quality, latency)]
+    header = "| Metric | " + " | ".join(name for name, _, _ in columns) + " | Target |"
+    lines = [header, "|---|" + "---|" * len(columns) + "---|"]
+    names = list((quality or runs[-1][1] or {}).get("metrics", {}))
+    names += ["latency_p50_ms", "latency_p95_ms"]
+    for name in names:
+        cells, reference = [], None
+        for _, q, lat in columns:
+            source = (lat or {}) if name.startswith("latency") else (q or {})
+            item = source.get("metrics", {}).get(name)
+            reference = reference or item
+            cells.append(_value(name, item["value"]) if item else "not run")
+        if reference:
+            label = reference["description"]
+            lines.append(f"| {label} | " + " | ".join(cells) + f" | {_target(name, reference)} |")
+    styles = [
+        ((q or {}).get("settings") or {}).get("answer_style", "concise") for _, q, _ in columns
+    ]
+    lines += [
+        "",
+        "Answer style per run: "
+        + ", ".join(f"{name}: {style}" for (name, _, _), style in zip(columns, styles, strict=True))
+        + ".",
+    ]
+    return lines
+
+
+def write_report(base: Path = RESULTS_DIR) -> None:
+    quality = read_json("quality_summary.json", base)
+    records = (read_json("quality_results.json", base) or {}).get("records", [])
+    latency = read_json("latency_summary.json", base)
+    ablation = read_json("ablation_results.json", base)
+    agreement = read_json("judge_agreement.json", base)
+    runs = earlier_runs(base)
+    agreement_source = "this run"
+    if not agreement:
+        for name, _, _, archived in reversed(runs):
+            if archived:
+                agreement, agreement_source = archived, name
+                break
 
     out = [
         "# Evaluation Report",
@@ -54,7 +106,8 @@ def write_report() -> None:
             "",
             f"{counts['questions']} questions ({counts['in_scope']} in scope, "
             f"{counts['out_of_scope']} out of scope). Answer model {settings['answer_model']} "
-            f"(reasoning effort {settings['reasoning_effort']}), judge {settings['judge_model']}, "
+            f"(reasoning effort {settings['reasoning_effort']}, answer style "
+            f"{settings.get('answer_style', 'concise')}), judge {settings['judge_model']}, "
             f"{settings['retrieval_mode']} retrieval with k = {settings['top_k']}, "
             f"{settings['chunk_strategy']} chunks, relevance threshold "
             f"{settings['relevance_threshold']}.",
@@ -113,14 +166,30 @@ def write_report() -> None:
             )
         out.append("")
 
+    if runs:
+        out += [
+            "## Comparison with earlier runs",
+            "",
+            *comparison_table(runs, quality, latency),
+            "",
+        ]
+
     if agreement:
         values = agreement["agreement"]
+        source = (
+            ""
+            if agreement_source == "this run"
+            else (
+                f" These labels were made on the answers of {agreement_source}; "
+                "the judge model and its instructions have not changed since."
+            )
+        )
         out += [
             "## Judge validation",
             "",
             f"Hand labels on {agreement['answers']} answers agree with the judge on groundedness "
             f"{values['grounded']:.0%}, citations {values['citations_correct']:.0%}, and "
-            f"correctness {values['correctness']:.0%} of the time.",
+            f"correctness {values['correctness']:.0%} of the time.{source}",
             "",
         ]
 
@@ -164,5 +233,5 @@ def write_report() -> None:
             )
         out.append("")
 
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    (RESULTS_DIR / "report.md").write_text("\n".join(out) + "\n", encoding="utf-8")
+    base.mkdir(parents=True, exist_ok=True)
+    (base / "report.md").write_text("\n".join(out) + "\n", encoding="utf-8")

@@ -202,6 +202,7 @@ All settings are read from environment variables, with defaults in `app/config.p
 | `RELEVANCE_THRESHOLD` | 0.55 | Stage 3 |
 | `MAX_ANSWER_WORDS` / `LLM_MAX_TOKENS` | 200 words / 1024 tokens (reasoning plus answer) | Stage 3 |
 | `LLM_REASONING_EFFORT` | low (gpt-oss models; leave empty for other models) | Stage 3 |
+| `ANSWER_STYLE` | complete (or concise, the first evaluation run's wording) | Stage 6 |
 | `GROQ_API_KEY` | (none) | Stage 3 |
 | `LLM_MODEL` / `LLM_BASE_URL` | openai/gpt-oss-20b / Groq | Stage 3 |
 | `JUDGE_MODEL` | openai/gpt-oss-120b | Stage 6 |
@@ -248,6 +249,12 @@ python -m evaluation.quality                  # answers and judges all 30 questi
 python -m evaluation.review                   # writes a sheet to hand-label 10 answers
 python -m evaluation.review --score           # compares your labels with the judge
 python -m evaluation.latency --url https://veridane-policy-assistant.onrender.com   # about 7 minutes
+```
+
+To compare a change with an earlier run, archive the earlier run first; the report then shows the runs side by side:
+
+```bash
+python -m evaluation.archive run1             # moves the current results to evaluation/results/runs/run1/
 ```
 
 `evaluation.quality` saves its progress after every question. If it stops (for example on a rate limit or a closed laptop), run it again and it continues where it left off; add `--fresh` to start over.

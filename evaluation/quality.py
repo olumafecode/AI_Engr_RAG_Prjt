@@ -42,6 +42,7 @@ def run_settings(settings: Settings) -> dict:
     return {
         "answer_model": settings.llm_model,
         "reasoning_effort": settings.llm_reasoning_effort,
+        "answer_style": settings.answer_style,
         "judge_model": settings.judge_model,
         "embedding_model": manifest.get("embedding_model"),
         "chunk_strategy": manifest.get("chunk_strategy"),
@@ -87,6 +88,8 @@ def main(argv: list[str] | None = None) -> None:
                 {k: v for k, v in asdict(answer).items() if k not in ("question", "model")}
             )
             record["error"] = None
+            if record["refusal_reason"] == "no_citations":
+                record["raw_replies"] = assistant.last_raw_replies
         except LLMUnavailableError as error:
             record.update(
                 {

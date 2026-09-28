@@ -18,12 +18,12 @@ from dataclasses import asdict, dataclass
 from app.config import Settings
 from app.generation import (
     REFUSAL,
-    RETRY_NOTE,
     ChatModel,
     GroqChatModel,
     LLMNotConfiguredError,
     build_user_prompt,
     process_answer,
+    retry_note,
     system_prompt,
 )
 from app.retrieval import RetrievedChunk, Retriever
@@ -87,6 +87,7 @@ class PolicyAssistant:
             except LLMNotConfiguredError:
                 chat_model = None  # the relevance gate still works; answers need a key
         self._chat = chat_model
+        self.last_raw_replies: list[str] = []  # the model's raw replies to the last question
 
     def warm_up(self) -> None:
         """Run one retrieval so the model and index are loaded before the first user."""
@@ -157,18 +158,22 @@ class PolicyAssistant:
                 "The language model is not configured. Add GROQ_API_KEY to the environment."
             )
 
-        system = system_prompt(settings.max_answer_words)
+        system = system_prompt(settings.max_answer_words, settings.answer_style)
         user = build_user_prompt(question, [(chunk.metadata, chunk.text) for chunk in chunks])
-        result = process_answer(
-            self._chat.complete(system, user), len(chunks), settings.max_answer_words
-        )
+        self.last_raw_replies = [self._chat.complete(system, user)]
+        result = process_answer(self.last_raw_replies[0], len(chunks), settings.max_answer_words)
         if not result.refused and not result.cited:
+            self.last_raw_replies.append(
+                self._chat.complete(system, user + retry_note(settings.answer_style))
+            )
             result = process_answer(
-                self._chat.complete(system, user + RETRY_NOTE),
-                len(chunks),
-                settings.max_answer_words,
+                self.last_raw_replies[-1], len(chunks), settings.max_answer_words
             )
             if not result.refused and not result.cited:
+                logger.warning(
+                    "No valid citations after a retry; replies were: %r",
+                    [reply[:300] for reply in self.last_raw_replies],
+                )
                 return finish(REFUSAL, "no_citations", [])
 
         if result.refused:

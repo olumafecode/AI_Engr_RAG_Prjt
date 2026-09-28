@@ -34,15 +34,16 @@ def load_chunk_texts(settings: Settings) -> dict[str, dict]:
     return {record["chunk_id"]: record for record in records}
 
 
-def write_json(name: str, data) -> Path:
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    path = RESULTS_DIR / name
+def write_json(name: str, data, base: Path | None = None) -> Path:
+    base = base or RESULTS_DIR
+    base.mkdir(parents=True, exist_ok=True)
+    path = base / name
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return path
 
 
-def read_json(name: str):
-    path = RESULTS_DIR / name
+def read_json(name: str, base: Path | None = None):
+    path = (base or RESULTS_DIR) / name
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
 

@@ -111,3 +111,32 @@ def test_an_empty_reply_is_an_error_not_a_refusal(settings):
     client = _StubClient("", finish_reason="length")
     with pytest.raises(LLMUnavailableError, match="finish_reason=length"):
         _model(settings, client).complete("system", "user")
+
+
+def test_concise_style_is_exactly_the_first_evaluation_runs_prompt():
+    from pathlib import Path
+
+    run1 = (Path(__file__).parent / "data" / "run1_system_prompt.txt").read_text(encoding="utf-8")
+    assert system_prompt(200, "concise") == run1
+
+
+def test_complete_style_asks_for_details_and_exact_citation_format():
+    prompt = system_prompt(200)
+    assert "every condition, exception, approval, limit, deadline, and contact" in prompt
+    assert "exactly like [S2] or [S1][S3]" in prompt
+    assert "Leave out anything the excerpts do not state" in prompt
+
+
+def test_unknown_answer_style_is_rejected():
+    import pytest
+
+    with pytest.raises(ValueError):
+        system_prompt(200, "chatty")
+
+
+def test_other_citation_bracket_styles_are_accepted():
+    result = process_answer(
+        "Limit is USD 20,000 (S2). Report it \u3010S1\u3011. Also [s2].", 3, 200
+    )
+    assert result.text == "Limit is USD 20,000 [1]. Report it [2]. Also [1]."
+    assert result.cited == [2, 1]

@@ -71,6 +71,8 @@ class Settings:
     llm_max_tokens: int = 1024  # covers the hidden reasoning tokens plus the answer
     llm_timeout: float = 30.0
 
+    answer_style: str = "complete"  # or "concise", the wording of the first evaluation run
+
     # Guardrails
     max_question_chars: int = 1000
     max_answer_words: int = 200
@@ -103,6 +105,7 @@ class Settings:
             llm_reasoning_effort=os.getenv("LLM_REASONING_EFFORT", defaults.llm_reasoning_effort),
             llm_max_tokens=_int("LLM_MAX_TOKENS", defaults.llm_max_tokens),
             llm_timeout=_float("LLM_TIMEOUT", defaults.llm_timeout),
+            answer_style=os.getenv("ANSWER_STYLE", defaults.answer_style),
             max_question_chars=_int("MAX_QUESTION_CHARS", defaults.max_question_chars),
             max_answer_words=_int("MAX_ANSWER_WORDS", defaults.max_answer_words),
         )
