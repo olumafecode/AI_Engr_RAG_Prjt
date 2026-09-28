@@ -2,7 +2,6 @@
   "settings": {
     "answer_model": "openai/gpt-oss-20b",
     "reasoning_effort": "low",
-    "answer_style": "complete",
     "judge_model": "openai/gpt-oss-120b",
     "embedding_model": "BAAI/bge-small-en-v1.5",
     "chunk_strategy": "heading",
@@ -23,7 +22,7 @@
       "gold_docs": [
         "VB-POL-009"
       ],
-      "answer": "Band D officers receive 22 annual leave days per year. \n\n- The entitlement is 22 business days for Band D. [1] \n- Staff who have completed 10 years of continuous service receive an additional 3 days each year. [1] \n- Annual leave accrues monthly from the start date, and new staff may take leave after 3 months of service. [2] \n- Unused leave may be carried over up to 5 days and must be used by 31 March, unless the CHRO approves a larger carry‑over. [3]",
+      "answer": "Band D officers receive 22 annual leave days per year. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -35,24 +34,6 @@
           "snippet": "Band | Annual leave (business days) A | 30 B | 28 C | 25 D | 22 E | 20 Staff who have completed 10 years of continuous service receive 3 additional days of annual leave each year.",
           "url": "/docs/VB-POL-009#41-entitlement",
           "chunk_id": "VB-POL-009-005"
-        },
-        {
-          "number": 2,
-          "doc_id": "VB-POL-009",
-          "title": "Leave and Public Holidays Policy",
-          "section": "4. Annual Leave > 4.2 New joiners and leavers",
-          "snippet": "Annual leave accrues monthly from the start date. Staff who join or leave during the year receive a pro rata entitlement. New staff may take annual leave once they have completed 3 months of service. The line manager may approve earlier...",
-          "url": "/docs/VB-POL-009#42-new-joiners-and-leavers",
-          "chunk_id": "VB-POL-009-006"
-        },
-        {
-          "number": 3,
-          "doc_id": "VB-POL-009",
-          "title": "Leave and Public Holidays Policy",
-          "section": "4. Annual Leave > 4.4 Carry-over",
-          "snippet": "Up to 5 unused days may be carried into the next leave year and must be used by 31 March. Days above that limit are forfeited unless the CHRO approves a larger carry-over because business needs prevented the staff member from taking leave....",
-          "url": "/docs/VB-POL-009#44-carry-over",
-          "chunk_id": "VB-POL-009-008"
         }
       ],
       "retrieved": [
@@ -99,25 +80,25 @@
       ],
       "best_vector_score": 0.7902,
       "latency_ms": {
-        "retrieval": 89,
-        "generation": 638,
-        "total": 727
+        "retrieval": 142,
+        "generation": 724,
+        "total": 866
       },
       "error": null,
       "cited_docs": [
         "VB-POL-009"
       ],
-      "words": 78,
+      "words": 10,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.258,
+      "token_f1": 0.25,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All statements are directly supported by the provided excerpts and the answer includes the 22 days and the extra 3 days after 10 years, matching the reference answer."
+        "correctness": "partial",
+        "explanation": "The answer correctly states the base entitlement of 22 days for Band D, but omits the additional 3 days after 10 years of service, so it is only partially complete."
       },
       "judge_error": null
     },
@@ -131,7 +112,7 @@
       "gold_docs": [
         "VB-POL-009"
       ],
-      "answer": "Boxing Day is observed on Monday 28 December 2026 because the actual holiday falls on Saturday 26 December 2026, and a public holiday that falls on a weekend is observed on the following Monday. [1][2]",
+      "answer": "Boxing Day is observed on Monday 28 December 2026. It is observed on that date because the actual holiday falls on Saturday 26 December 2026, and the policy states that a public holiday that falls on a Saturday or Sunday is observed on the following Monday. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -198,25 +179,25 @@
       ],
       "best_vector_score": 0.7279,
       "latency_ms": {
-        "retrieval": 50,
-        "generation": 491,
-        "total": 540
+        "retrieval": 75,
+        "generation": 368,
+        "total": 442
       },
       "error": null,
       "cited_docs": [
         "VB-POL-009"
       ],
-      "words": 34,
+      "words": 46,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.714,
+      "token_f1": 0.559,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer correctly states the observed date, the actual date, and the rule, all supported by the provided excerpts with accurate citations."
+        "explanation": "The answer correctly states the observed date and reason, all supported by the provided excerpts with accurate citations."
       },
       "judge_error": null
     },
@@ -230,7 +211,7 @@
       "gold_docs": [
         "VB-POL-001"
       ],
-      "answer": "Critical security patches must be installed within 7 days of release. [1][2]",
+      "answer": "Critical security patches must be installed within 7 days of release. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -297,9 +278,9 @@
       ],
       "best_vector_score": 0.7217,
       "latency_ms": {
-        "retrieval": 66,
-        "generation": 364,
-        "total": 429
+        "retrieval": 89,
+        "generation": 401,
+        "total": 490
       },
       "error": null,
       "cited_docs": [
@@ -329,7 +310,7 @@
       "gold_docs": [
         "VB-POL-001"
       ],
-      "answer": "The critical patch window was 14 days before the latest change. \n- The policy revision on 2026‑02‑01 reduced the critical patch window from 14 days to 7 days. [1]",
+      "answer": "The critical patch window was 14 days before the latest change to the Information Security Policy. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -387,25 +368,25 @@
       ],
       "best_vector_score": 0.7681,
       "latency_ms": {
-        "retrieval": 49,
-        "generation": 611,
-        "total": 660
+        "retrieval": 78,
+        "generation": 339,
+        "total": 417
       },
       "error": null,
       "cited_docs": [
         "VB-POL-001"
       ],
-      "words": 27,
+      "words": 16,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.316,
+      "token_f1": 0.24,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "Both statements are directly supported by the revision history excerpt, and the citation correctly references that excerpt; the answer matches the reference answer completely."
+        "correctness": "partial",
+        "explanation": "The answer correctly states the prior critical patch window of 14 days and cites S1, but it omits the key fact that version 4.2 reduced the window to 7 days."
       },
       "judge_error": null
     },
@@ -477,9 +458,9 @@
       ],
       "best_vector_score": 0.7925,
       "latency_ms": {
-        "retrieval": 50,
-        "generation": 1275,
-        "total": 1325
+        "retrieval": 161,
+        "generation": 198,
+        "total": 359
       },
       "error": null,
       "cited_docs": [
@@ -495,7 +476,7 @@
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer correctly states the minimum privileged account password length as 16 characters, directly supported by S1, and matches the reference answer."
+        "explanation": "The answer correctly states the minimum password length for privileged accounts as 16 characters, directly supported by S1, and the citation is accurate."
       },
       "judge_error": null
     },
@@ -511,7 +492,7 @@
         "VB-POL-009",
         "VB-POL-006"
       ],
-      "answer": "CoreLink access for a teller is suspended for the entire duration of the mandatory block leave and is restored on the teller’s first working day back, after the line manager confirms the return. [1][2][3]",
+      "answer": "The teller’s CoreLink access is suspended for the entire mandatory block leave period. It is restored on the teller’s first working day back, after the line manager confirms the return. [1] [2] [3]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -587,9 +568,9 @@
       ],
       "best_vector_score": 0.7972,
       "latency_ms": {
-        "retrieval": 52,
-        "generation": 402,
-        "total": 454
+        "retrieval": 85,
+        "generation": 666,
+        "total": 751
       },
       "error": null,
       "cited_docs": [
@@ -597,19 +578,19 @@
         "VB-POL-006",
         "VB-POL-009"
       ],
-      "words": 33,
+      "words": 30,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.702,
+      "token_f1": 0.764,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": false,
         "citation_problems": [
-          "Citation [3] (S4) only mentions suspension of CoreLink access and does not support the statement that access is restored on the first working day after line manager confirmation."
+          "Citation [3] (S4) does not mention that access is restored on the first working day after line‑manager confirmation, so it does not support the restoration part of the answer."
         ],
         "correctness": "full",
-        "explanation": "The answer includes all key facts from the reference and excerpts, but one citation does not fully support the restoration claim."
+        "explanation": "The answer accurately states the suspension and restoration of CoreLink access, matching the reference answer, but one citation does not back the restoration claim."
       },
       "judge_error": null
     },
@@ -623,7 +604,7 @@
       "gold_docs": [
         "VB-POL-013"
       ],
-      "answer": "DFS product and engineering staff can work remotely up to 3 days per week. \n- Eligibility: staff in the Technology Division and DFS product and engineering teams. \n- Approval required from the line manager and either the CIO/CTO or the CDO. \n- This allowance is specified in the current version of the Remote and Flexible Work Policy (version 1.1). [1][2]",
+      "answer": "DFS product and engineering staff can work remotely up to 3 days per week. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -690,25 +671,25 @@
       ],
       "best_vector_score": 0.8119,
       "latency_ms": {
-        "retrieval": 55,
-        "generation": 1443,
-        "total": 1498
+        "retrieval": 85,
+        "generation": 316,
+        "total": 402
       },
       "error": null,
       "cited_docs": [
         "VB-POL-013"
       ],
-      "words": 56,
+      "words": 14,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.421,
+      "token_f1": 0.303,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All statements are directly supported by the excerpts and correctly cited, matching the reference answer without contradiction."
+        "correctness": "partial",
+        "explanation": "The answer correctly states the 3‑day limit and cites supporting excerpts, but it omits the required approval from the line manager plus the CIO/CTO or CDO, which is a key part of the reference answer."
       },
       "judge_error": null
     },
@@ -722,7 +703,7 @@
       "gold_docs": [
         "VB-POL-013"
       ],
-      "answer": "No. Tellers are not eligible for regular remote work. \n\n- Tellers must perform their duties on bank premises. \n- Remote work is prohibited for all branch‑based roles, including tellers. \n- This restriction is stated in the Remote and Flexible Work Policy, section 4.2. [1]",
+      "answer": "No. Tellers are branch‑based roles that must be performed on bank premises and are not eligible for regular remote work. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -780,25 +761,25 @@
       ],
       "best_vector_score": 0.7055,
       "latency_ms": {
-        "retrieval": 61,
-        "generation": 345,
-        "total": 406
+        "retrieval": 95,
+        "generation": 419,
+        "total": 514
       },
       "error": null,
       "cited_docs": [
         "VB-POL-013"
       ],
-      "words": 40,
+      "words": 20,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.509,
+      "token_f1": 0.686,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "All statements are supported by the excerpts and the citation correctly references S3; the answer matches the reference answer completely."
+        "explanation": "The answer accurately reflects the policy that tellers are branch‑based roles and are not eligible for regular remote work, and the citation correctly references the relevant excerpt."
       },
       "judge_error": null
     },
@@ -812,7 +793,7 @@
       "gold_docs": [
         "VB-POL-012"
       ],
-      "answer": "The international per diem for a Band C employee is USD 90 per day. [1] \n\n- The per diem covers meals, tips, and small incidental costs; no receipts are required. [1] \n- The per diem is reduced by 30 % for each free meal provided during the day (e.g., conference or hotel rate). [1] \n- A day trip of more than 8 hours away from the usual workplace earns only 50 % of the domestic per diem. [1] \n- Alcohol is not reimbursed except as part of approved client entertainment. [1]",
+      "answer": "The international per diem for a Band C employee is USD 90 per day. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -870,25 +851,25 @@
       ],
       "best_vector_score": 0.6966,
       "latency_ms": {
-        "retrieval": 61,
-        "generation": 1232,
-        "total": 1293
+        "retrieval": 112,
+        "generation": 251,
+        "total": 363
       },
       "error": null,
       "cited_docs": [
         "VB-POL-012"
       ],
-      "words": 80,
+      "words": 14,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.094,
+      "token_f1": 0.444,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "All statements are supported by the provided excerpt and the key fact matches the reference answer."
+        "explanation": "The answer correctly states the international per diem for a Band C employee as USD 90 per day, directly supported by the policy excerpt."
       },
       "judge_error": null
     },
@@ -902,7 +883,7 @@
       "gold_docs": [
         "VB-POL-012"
       ],
-      "answer": "No, a Band B manager cannot fly business class on a 5‑hour international flight. Band B is permitted business class only for flights over 6 hours; otherwise economy is required. This rule applies to all international flights for Band B staff. The policy does not provide any exception or alternative approval for shorter flights. [1]",
+      "answer": "No. Band B staff are allowed to fly business class only on international flights that exceed six hours; a 5‑hour flight requires economy class. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -960,29 +941,25 @@
       ],
       "best_vector_score": 0.7116,
       "latency_ms": {
-        "retrieval": 46,
-        "generation": 818,
-        "total": 864
+        "retrieval": 92,
+        "generation": 513,
+        "total": 605
       },
       "error": null,
       "cited_docs": [
         "VB-POL-012"
       ],
-      "words": 54,
+      "words": 24,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.417,
+      "token_f1": 0.524,
       "judge": {
-        "grounded": false,
-        "unsupported_statements": [
-          "The policy does not provide any exception or alternative approval for shorter flights."
-        ],
-        "citations_correct": false,
-        "citation_problems": [
-          "Citation [1] (S1) does not support the claim that the policy provides no exception or alternative approval for shorter flights."
-        ],
+        "grounded": true,
+        "unsupported_statements": [],
+        "citations_correct": true,
+        "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer includes the correct key facts (Band B only gets business class on international flights over 6 hours), but adds an unsupported statement about lack of exceptions, and the single citation does not back that extra claim."
+        "explanation": "The answer correctly states the policy that Band B only gets business class on international flights over 6 hours and that a 5‑hour flight must be economy, all supported by the cited excerpt."
       },
       "judge_error": null
     },
@@ -996,7 +973,7 @@
       "gold_docs": [
         "VB-POL-007"
       ],
-      "answer": "The balance limit for a Tier 2 Veridane Wallet is USD 2,000, and the daily transaction limit is USD 1,000. \n- Tier 2 accounts cannot make international transfers. \n- Tier 2 wallets can be opened entirely via the Veridane Mobile app. \n- Only one Tier 1 or Tier 2 wallet is allowed per national ID number. \n- Selfie images used for verification are biometric data covered by VB‑POL‑003. \n\n[1]",
+      "answer": "The Tier 2 Veridane Wallet allows a maximum balance of USD 2,000 and a daily transaction limit of USD 1,000. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1054,25 +1031,25 @@
       ],
       "best_vector_score": 0.8086,
       "latency_ms": {
-        "retrieval": 56,
-        "generation": 402,
-        "total": 458
+        "retrieval": 85,
+        "generation": 357,
+        "total": 442
       },
       "error": null,
       "cited_docs": [
         "VB-POL-007"
       ],
-      "words": 64,
+      "words": 20,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.286,
+      "token_f1": 0.737,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All statements are directly supported by S1 and the citation correctly references that excerpt; the answer includes all key facts from the reference answer and adds no contradictory information."
+        "correctness": "partial",
+        "explanation": "The answer correctly states the Tier 2 maximum balance and daily transaction limit, but omits the key fact that Tier 2 wallets have no international transfers, so it is only partially correct."
       },
       "judge_error": null
     },
@@ -1087,7 +1064,7 @@
         "VB-POL-007",
         "VB-POL-008"
       ],
-      "answer": "A cash deposit of USD 5,000 or more in one business day requires a signed source of funds declaration from the depositor. A Currency Transaction Report (CTR) is filed when a customer’s cash transactions total USD 10,000 or more in one business day. \n\n- Source of funds declaration required for deposits ≥ USD 5,000 in one business day. [1][2] \n- CTR filed for cash transactions ≥ USD 10,000 in one business day, within 7 days, automatically aggregated by CoreLink and filed by Compliance. [1][2]",
+      "answer": "A cash deposit of USD 5,000 or more in one business day requires the depositor to sign a source‑of‑funds declaration [1], [2]. \nA Currency Transaction Report (CTR) is filed automatically by CoreLink when a customer’s cash transactions total USD 10,000 or more in one business day; the report is then submitted to the FIB within seven days [1], [2].",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1154,28 +1131,26 @@
       ],
       "best_vector_score": 0.7873,
       "latency_ms": {
-        "retrieval": 45,
-        "generation": 449,
-        "total": 494
+        "retrieval": 75,
+        "generation": 596,
+        "total": 670
       },
       "error": null,
       "cited_docs": [
         "VB-POL-007",
         "VB-POL-008"
       ],
-      "words": 78,
+      "words": 55,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.661,
+      "token_f1": 0.757,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
-        "citations_correct": false,
-        "citation_problems": [
-          "Citation [1] is used for the CTR statement but S1 does not mention the 7‑day filing deadline or that Compliance files the report."
-        ],
+        "citations_correct": true,
+        "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer contains all required facts and matches the reference answer, but one citation does not fully support the stated details."
+        "explanation": "All statements are directly supported by the excerpts and correctly cited, matching the reference answer."
       },
       "judge_error": null
     },
@@ -1190,7 +1165,7 @@
         "VB-POL-005",
         "VB-ORG-001"
       ],
-      "answer": "You can report a concern anonymously through the Speak Up Line or the web portal. The system will give you a case number and a PIN so you can check progress and answer follow‑up questions without revealing your identity. [1]",
+      "answer": "You can report a concern anonymously by using the Speak Up Line or the web portal. The system will give you a case number and a PIN so you can track progress and answer follow‑up questions without revealing your identity. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1248,25 +1223,25 @@
       ],
       "best_vector_score": 0.73,
       "latency_ms": {
-        "retrieval": 28,
-        "generation": 443,
-        "total": 471
+        "retrieval": 80,
+        "generation": 631,
+        "total": 711
       },
       "error": null,
       "cited_docs": [
         "VB-POL-005"
       ],
-      "words": 39,
+      "words": 40,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.548,
+      "token_f1": 0.541,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "partial",
-        "explanation": "The answer correctly states the anonymous reporting channels and the case number/PIN process, but omits the phone number and the detail that the service is run by ClearLine Assurance, so it only partially matches the reference answer."
+        "explanation": "The answer correctly states the anonymous reporting channels and the case number/PIN process, but omits the phone number and the detail that the service is run by ClearLine Assurance, which are present in the reference answer."
       },
       "judge_error": null
     },
@@ -1280,7 +1255,7 @@
       "gold_docs": [
         "VB-POL-004"
       ],
-      "answer": "No, you cannot accept a gift worth USD 120 from a customer. \n- Gifts valued between USD 51 and USD 250 require line‑manager approval before acceptance. \n- Gifts to customers are limited to bank‑branded items worth no more than USD 50 per recipient. \n- All gifts must be recorded in the Gifts and Hospitality Register within 5 business days. \n\n[1][2]",
+      "answer": "No, you cannot accept a USD 120 gift from a customer without prior approval. According to the Ethics and Code of Conduct Policy, gifts valued between USD 51 and USD 250 require line‑manager approval before acceptance [1]. Once approved, the gift must be recorded in the Gifts and Hospitality Register within five business days [1].",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1292,15 +1267,6 @@
           "snippet": "6.1 Staff may accept modest gifts and hospitality that are infrequent and could not reasonably be seen as influencing a business decision. All gifts and hospitality offered, whether accepted or declined, must be recorded in the Gifts and...",
           "url": "/docs/VB-POL-004#6-gifts-and-hospitality",
           "chunk_id": "VB-POL-004-007"
-        },
-        {
-          "number": 2,
-          "doc_id": "VB-POL-012",
-          "title": "Expense and Business Travel Policy",
-          "section": "10. Client Entertainment and Gifts",
-          "snippet": "- Band B and more senior staff may host business meals with customers or prospective customers, up to USD 75 per person. Band C staff need the Head of Department's approval in advance. - Amounts above USD 75 per person require approval...",
-          "url": "/docs/VB-POL-012#10-client-entertainment-and-gifts",
-          "chunk_id": "VB-POL-012-013"
         }
       ],
       "retrieved": [
@@ -1347,26 +1313,25 @@
       ],
       "best_vector_score": 0.6965,
       "latency_ms": {
-        "retrieval": 27,
-        "generation": 478,
-        "total": 505
+        "retrieval": 165,
+        "generation": 848,
+        "total": 1013
       },
       "error": null,
       "cited_docs": [
-        "VB-POL-004",
-        "VB-POL-012"
+        "VB-POL-004"
       ],
-      "words": 56,
+      "words": 53,
       "retrieval_hit": true,
-      "citation_docs_ok": false,
-      "token_f1": 0.535,
+      "citation_docs_ok": true,
+      "token_f1": 0.561,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "incorrect",
-        "explanation": "The answer correctly cites policy excerpts for all statements, but it contradicts the reference answer by stating the gift cannot be accepted, whereas the reference says it could be accepted with line‑manager approval."
+        "correctness": "full",
+        "explanation": "The answer accurately reflects the policy excerpts, cites the correct source, and includes all key facts from the reference answer."
       },
       "judge_error": null
     },
@@ -1381,29 +1346,10 @@
         "VB-POL-006",
         "VB-POL-008"
       ],
-      "answer": "The withdrawal of USD 30,000 at a branch counter must be authorized by a Branch Operations Manager (BOM). \n\n- The teller alone may authorize up to USD 5,000; the BOM authorizes withdrawals from USD 5,001 to USD 50,000. \n- No one may authorize a transaction they initiated, so the teller cannot authorize this amount. \n- The BOM’s authorization is required for any withdrawal in the USD 5,001‑USD 50,000 range. \n\n[1][2]",
-      "refused": false,
-      "refusal_reason": null,
-      "citations": [
-        {
-          "number": 1,
-          "doc_id": "VB-POL-008",
-          "title": "Branch Operations Policy",
-          "section": "7. Counter Services > 7.3 Cash withdrawals",
-          "snippet": "- The teller verifies the customer's ID and signature before paying out. - Authorization limits: the teller alone up to USD 5,000; the BOM from USD 5,001 to USD 50,000; the BM above USD 50,000 (VB-POL-006). - Withdrawals of USD 20,000 or...",
-          "url": "/docs/VB-POL-008#counter-services",
-          "chunk_id": "VB-POL-008-016"
-        },
-        {
-          "number": 2,
-          "doc_id": "VB-POL-006",
-          "title": "Internal Control Policy",
-          "section": "6. Key Control Requirements > 6.3 Authorization limits",
-          "snippet": "No one may authorize a transaction they initiated. Transaction | Authorization limits Cash withdrawal at a branch counter | Teller up to USD 5,000; BOM from USD 5,001 to USD 50,000; BM above USD 50,000 Staff-initiated transfer or payment...",
-          "url": "/docs/VB-POL-006#page=2",
-          "chunk_id": "VB-POL-006-009"
-        }
-      ],
+      "answer": "I can only answer questions about Veridane Bank policies, and I couldn't find the answer in them.",
+      "refused": true,
+      "refusal_reason": "no_citations",
+      "citations": [],
       "retrieved": [
         {
           "chunk_id": "VB-POL-008-016",
@@ -1448,28 +1394,16 @@
       ],
       "best_vector_score": 0.7932,
       "latency_ms": {
-        "retrieval": 50,
-        "generation": 571,
-        "total": 622
+        "retrieval": 79,
+        "generation": 919,
+        "total": 998
       },
       "error": null,
-      "cited_docs": [
-        "VB-POL-006",
-        "VB-POL-008"
-      ],
-      "words": 66,
+      "cited_docs": [],
+      "words": 0,
       "retrieval_hit": true,
-      "citation_docs_ok": true,
-      "token_f1": 0.337,
-      "judge": {
-        "grounded": true,
-        "unsupported_statements": [],
-        "citations_correct": true,
-        "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All statements are directly supported by the excerpts and the citations point to the appropriate sources; the answer matches the reference answer fully."
-      },
-      "judge_error": null
+      "citation_docs_ok": null,
+      "token_f1": 0.0
     },
     {
       "id": "q16",
@@ -1481,7 +1415,7 @@
       "gold_docs": [
         "VB-POL-003"
       ],
-      "answer": "The Data Protection Commission must be notified within 72 hours of the bank becoming aware of a personal data breach that is likely to put people’s rights at risk. \n\n- The SOC informs the DPO immediately after a suspected breach. \n- The DPO assesses the risk to the affected people. \n- If the risk is likely to put people’s rights at risk, the DPO notifies the DPC within 72 hours of the bank becoming aware of it. \n- The breach is recorded in the breach register regardless of notification. \n\n[1]",
+      "answer": "The Data Protection Commission must be notified within 72 hours of the bank becoming aware of a personal data breach that is likely to put people’s rights at risk. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1539,25 +1473,25 @@
       ],
       "best_vector_score": 0.7731,
       "latency_ms": {
-        "retrieval": 50,
-        "generation": 1129,
-        "total": 1179
+        "retrieval": 73,
+        "generation": 499,
+        "total": 572
       },
       "error": null,
       "cited_docs": [
         "VB-POL-003"
       ],
-      "words": 85,
+      "words": 29,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.456,
+      "token_f1": 0.702,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All statements are directly supported by the excerpts and the citation correctly references the source; the answer fully matches the reference answer."
+        "correctness": "partial",
+        "explanation": "The answer correctly states the 72‑hour reporting requirement and the condition, but omits the reference to the DPO making the notification, which is part of the key facts in the reference answer."
       },
       "judge_error": null
     },
@@ -1572,7 +1506,7 @@
         "VB-POL-003",
         "VB-POL-008"
       ],
-      "answer": "CCTV footage is kept for 90 days, unless it is retained for an investigation. [1][2]",
+      "answer": "CCTV footage is kept for 90 days, unless it is retained for an investigation. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1639,9 +1573,9 @@
       ],
       "best_vector_score": 0.7508,
       "latency_ms": {
-        "retrieval": 67,
-        "generation": 258,
-        "total": 325
+        "retrieval": 92,
+        "generation": 436,
+        "total": 529
       },
       "error": null,
       "cited_docs": [
@@ -1657,10 +1591,10 @@
         "unsupported_statements": [],
         "citations_correct": false,
         "citation_problems": [
-          "Citation [1] (S1) confirms that footage is kept for 90 days but does not mention the exception for investigations, so it does not fully support the whole statement."
+          "Citation [1] (S1) only confirms that footage is kept for 90 days and does not mention the exception \"unless kept for an investigation\"."
         ],
         "correctness": "full",
-        "explanation": "The answer correctly states the retention period and investigation exception, matching the reference answer, but one citation does not fully back the exception clause."
+        "explanation": "The answer states the correct retention period and exception, matching the reference answer, but one citation does not fully support the entire statement."
       },
       "judge_error": null
     },
@@ -1674,7 +1608,7 @@
       "gold_docs": [
         "VB-POL-010"
       ],
-      "answer": "The notice period for a Band B employee who resigns is 2 months. [1]",
+      "answer": "The notice period for a Band B employee who resigns is two months. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1732,9 +1666,9 @@
       ],
       "best_vector_score": 0.7593,
       "latency_ms": {
-        "retrieval": 56,
-        "generation": 2088,
-        "total": 2144
+        "retrieval": 120,
+        "generation": 519,
+        "total": 640
       },
       "error": null,
       "cited_docs": [
@@ -1743,14 +1677,14 @@
       "words": 13,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.267,
+      "token_f1": 0.133,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer correctly states the notice period as 2 months, which is directly supported by S1, and the citation is accurate."
+        "explanation": "The answer correctly states the Band B notice period as two months and cites the appropriate excerpt."
       },
       "judge_error": null
     },
@@ -1765,7 +1699,7 @@
         "VB-POL-010",
         "VB-POL-002"
       ],
-      "answer": "System access is disabled within 4 hours of HR’s notification when a staff member is summarily dismissed. \n- HR must notify IT immediately after the dismissal or escort. \n- IT must disable all system access within 4 hours of that notification. [1][2]",
+      "answer": "System access is disabled within 4 hours of HR notifying IT when a staff member is summarily dismissed or escorted from the premises. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1832,26 +1766,26 @@
       ],
       "best_vector_score": 0.8258,
       "latency_ms": {
-        "retrieval": 68,
-        "generation": 535,
-        "total": 603
+        "retrieval": 123,
+        "generation": 405,
+        "total": 528
       },
       "error": null,
       "cited_docs": [
         "VB-POL-002",
         "VB-POL-010"
       ],
-      "words": 39,
+      "words": 23,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.298,
+      "token_f1": 0.333,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "All factual claims are directly supported by the provided excerpts and the citations correctly reference those excerpts; the answer includes the key fact of disabling access within 4 hours and adds accurate, non‑contradictory context."
+        "explanation": "The answer accurately reflects the excerpts, cites the correct sources, and fully matches the reference answer."
       },
       "judge_error": null
     },
@@ -1865,7 +1799,7 @@
       "gold_docs": [
         "VB-POL-011"
       ],
-      "answer": "The Chief Digital Officer (CDO) is the only authorized spokesperson for digital channel outages. [1]",
+      "answer": "The only person authorized to speak to the media about a digital channel outage is the Chief Digital Officer (CDO). [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1923,25 +1857,25 @@
       ],
       "best_vector_score": 0.6799,
       "latency_ms": {
-        "retrieval": 42,
-        "generation": 529,
+        "retrieval": 157,
+        "generation": 412,
         "total": 570
       },
       "error": null,
       "cited_docs": [
         "VB-POL-011"
       ],
-      "words": 14,
+      "words": 20,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.526,
+      "token_f1": 0.4,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "The answer correctly states that the CDO is the authorized spokesperson for digital channel outages, directly supported by S1, and matches the reference answer."
+        "explanation": "The answer correctly states that the CDO is the authorized spokesperson for digital channel outages, supported by S1, and matches the reference answer."
       },
       "judge_error": null
     },
@@ -1955,7 +1889,7 @@
       "gold_docs": [
         "VB-POL-008"
       ],
-      "answer": "The maximum cash a teller may hold at the counter is USD 20,000. \n- Cash above this limit must be transferred to the vault during the day. [1][2]",
+      "answer": "The maximum cash a teller may hold at the counter is USD 20,000. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -1967,15 +1901,6 @@
           "snippet": "A teller may hold no more than USD 20,000 at the counter. Cash above this limit is transferred to the vault during the day.",
           "url": "/docs/VB-POL-008#cash-management",
           "chunk_id": "VB-POL-008-008"
-        },
-        {
-          "number": 2,
-          "doc_id": "VB-POL-008",
-          "title": "Branch Operations Policy",
-          "section": "Revision History",
-          "snippet": "Version | Date | Summary of changes 4.0 | 2026-03-01 | Added ATM and digital hub responsibilities shared with DFS. Captured card holding period reduced from 10 to 5 business days. 3.2 | 2025-06-01 | Teller counter cash limit raised from...",
-          "url": "/docs/VB-POL-008#revision-history",
-          "chunk_id": "VB-POL-008-031"
         }
       ],
       "retrieved": [
@@ -2022,27 +1947,25 @@
       ],
       "best_vector_score": 0.8771,
       "latency_ms": {
-        "retrieval": 52,
-        "generation": 309,
-        "total": 361
+        "retrieval": 141,
+        "generation": 219,
+        "total": 359
       },
       "error": null,
       "cited_docs": [
         "VB-POL-008"
       ],
-      "words": 26,
+      "words": 13,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.564,
+      "token_f1": 0.385,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
-        "citations_correct": false,
-        "citation_problems": [
-          "Citation [2] points to S3, which does not support the claim that cash above the limit must be transferred to the vault; the correct source is S1."
-        ],
-        "correctness": "full",
-        "explanation": "The answer includes all key facts from the reference answer and they are supported by the excerpts, but one citation is incorrect."
+        "citations_correct": true,
+        "citation_problems": [],
+        "correctness": "partial",
+        "explanation": "The answer correctly states the USD 20,000 limit and cites the appropriate excerpt, but it omits the reference answer's second key fact that cash above this limit must be transferred to the vault during the day."
       },
       "judge_error": null
     },
@@ -2058,7 +1981,7 @@
         "VB-POL-012",
         "VB-POL-005"
       ],
-      "answer": "Report a lost or stolen card to the Fraud Desk or the DFS Contact Center and notify your line manager. \n- Fraud Desk: 0800 555 0177 or 0800 555 0178 (toll‑free), fraud@veridane.example, staff ext. 4777 [1][2] \n- DFS Contact Center: 0800 555 0140 or 0800 555 0141 (toll‑free), dfs.support@veridane.example [2] \n- Also inform your line manager immediately [1]",
+      "answer": "Call the Fraud Desk immediately (0800 555 0177 or 0800 555 0178) or the DFS Contact Center, and inform your line manager. [1] [2]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -2125,26 +2048,26 @@
       ],
       "best_vector_score": 0.6271,
       "latency_ms": {
-        "retrieval": 54,
-        "generation": 462,
-        "total": 515
+        "retrieval": 79,
+        "generation": 723,
+        "total": 802
       },
       "error": null,
       "cited_docs": [
         "VB-ORG-001",
         "VB-POL-012"
       ],
-      "words": 52,
+      "words": 22,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.41,
+      "token_f1": 0.488,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
         "citations_correct": true,
         "citation_problems": [],
-        "correctness": "full",
-        "explanation": "All factual statements are found in the provided excerpts and citations correctly point to supporting text; the answer includes the required Fraud Desk contact details and adds correct, non‑contradictory information."
+        "correctness": "partial",
+        "explanation": "The answer correctly includes the Fraud Desk numbers and reporting instructions, but it omits the staff extension, email address and 24/7 availability noted in the reference answer, while adding extra non‑contradictory details."
       },
       "judge_error": null
     },
@@ -2158,7 +2081,7 @@
       "gold_docs": [
         "VB-POL-002"
       ],
-      "answer": "The latest version (3.1) of the Password and Access Control Policy introduced two changes: the minimum length for standard account passwords was increased from 12 to 14 characters, and the use of SMS as a fallback for multi‑factor authentication was limited to 7 days. [1]",
+      "answer": "The latest version (3.1) of the Password and Access Control Policy introduced two changes: the minimum password length for standard accounts was increased from 12 to 14 characters, and the use of SMS as a fallback for multi‑factor authentication was limited to 7 days. [1]",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -2224,9 +2147,9 @@
       ],
       "best_vector_score": 0.7779,
       "latency_ms": {
-        "retrieval": 55,
-        "generation": 300,
-        "total": 355
+        "retrieval": 82,
+        "generation": 447,
+        "total": 529
       },
       "error": null,
       "cited_docs": [
@@ -2235,7 +2158,7 @@
       "words": 44,
       "retrieval_hit": true,
       "citation_docs_ok": true,
-      "token_f1": 0.609,
+      "token_f1": 0.638,
       "judge": {
         "grounded": true,
         "unsupported_statements": [],
@@ -2257,7 +2180,7 @@
         "VB-POL-007",
         "VB-ORG-001"
       ],
-      "answer": "The Know Your Customer policy is owned by the Chief Compliance Officer (CCO). The CCO also approves all relationships with politically exposed persons (PEPs). [1]",
+      "answer": "The Know Your Customer policy is owned by the Chief Compliance Officer (CCO) [1]. The CCO also approves all relationships with politically exposed persons (PEPs) [1].",
       "refused": false,
       "refusal_reason": null,
       "citations": [
@@ -2315,9 +2238,9 @@
       ],
       "best_vector_score": 0.7297,
       "latency_ms": {
-        "retrieval": 52,
-        "generation": 341,
-        "total": 393
+        "retrieval": 75,
+        "generation": 421,
+        "total": 496
       },
       "error": null,
       "cited_docs": [
@@ -2333,7 +2256,7 @@
         "citations_correct": true,
         "citation_problems": [],
         "correctness": "full",
-        "explanation": "Both statements are directly supported by S1, and the citation correctly references that excerpt; the answer matches the reference answer completely."
+        "explanation": "Both statements are directly supported by S1 and match the reference answer."
       },
       "judge_error": null
     },
@@ -2393,9 +2316,9 @@
       ],
       "best_vector_score": 0.4751,
       "latency_ms": {
-        "retrieval": 55,
+        "retrieval": 145,
         "generation": 0,
-        "total": 55
+        "total": 145
       },
       "error": null,
       "cited_docs": [],
@@ -2460,9 +2383,9 @@
       ],
       "best_vector_score": 0.6772,
       "latency_ms": {
-        "retrieval": 34,
-        "generation": 281,
-        "total": 315
+        "retrieval": 68,
+        "generation": 483,
+        "total": 551
       },
       "error": null,
       "cited_docs": [],
@@ -2527,9 +2450,9 @@
       ],
       "best_vector_score": 0.7474,
       "latency_ms": {
-        "retrieval": 36,
-        "generation": 339,
-        "total": 375
+        "retrieval": 66,
+        "generation": 3584,
+        "total": 3650
       },
       "error": null,
       "cited_docs": [],
@@ -2594,9 +2517,9 @@
       ],
       "best_vector_score": 0.4447,
       "latency_ms": {
-        "retrieval": 38,
+        "retrieval": 79,
         "generation": 0,
-        "total": 38
+        "total": 79
       },
       "error": null,
       "cited_docs": [],
@@ -2669,9 +2592,9 @@
       ],
       "best_vector_score": 0.6067,
       "latency_ms": {
-        "retrieval": 50,
-        "generation": 740,
-        "total": 790
+        "retrieval": 60,
+        "generation": 7548,
+        "total": 7607
       },
       "error": null,
       "cited_docs": [],
@@ -2736,9 +2659,9 @@
       ],
       "best_vector_score": 0.741,
       "latency_ms": {
-        "retrieval": 48,
-        "generation": 360,
-        "total": 407
+        "retrieval": 80,
+        "generation": 13932,
+        "total": 14011
       },
       "error": null,
       "cited_docs": [],

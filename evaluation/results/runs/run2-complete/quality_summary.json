@@ -1,19 +1,19 @@
 {
   "metrics": {
     "groundedness": {
-      "value": 1.0,
-      "n": 23,
+      "value": 0.9583,
+      "n": 24,
       "target": 0.9,
       "comparison": ">=",
       "met": true,
       "description": "Answered in-scope questions fully supported by the excerpts"
     },
     "citation_accuracy": {
-      "value": 0.913,
-      "n": 23,
+      "value": 0.75,
+      "n": 24,
       "target": 0.9,
       "comparison": ">=",
-      "met": true,
+      "met": false,
       "description": "Answered in-scope questions whose citations all support their statements and point only to acceptable source documents"
     },
     "correct_full_or_partial": {
@@ -25,11 +25,11 @@
       "description": "In-scope answers matching the reference fully or partly"
     },
     "correct_full": {
-      "value": 0.625,
+      "value": 0.9167,
       "n": 24,
       "target": 0.7,
       "comparison": ">=",
-      "met": false,
+      "met": true,
       "description": "In-scope answers matching the reference fully"
     },
     "out_of_scope_refused": {
@@ -41,7 +41,7 @@
       "description": "Out-of-scope questions refused"
     },
     "false_refusal_rate": {
-      "value": 0.0417,
+      "value": 0.0,
       "n": 24,
       "target": 0.05,
       "comparison": "<=",
@@ -58,7 +58,7 @@
     },
     "length_compliance": {
       "value": 1.0,
-      "n": 23,
+      "n": 24,
       "target": 1.0,
       "comparison": ">=",
       "met": true,
@@ -77,8 +77,8 @@
     "questions": 30,
     "in_scope": 24,
     "out_of_scope": 6,
-    "answered_in_scope": 23,
-    "judged": 23,
+    "answered_in_scope": 24,
+    "judged": 24,
     "judge_errors": 0
   },
   "by_type": {
@@ -89,20 +89,20 @@
     },
     "fact": {
       "questions": 15,
-      "correct_full_or_partial": 1.0,
+      "correct_full_or_partial": 0.9333,
       "retrieval_hit_rate": 1.0
     },
     "multi_doc": {
       "questions": 7,
-      "correct_full_or_partial": 0.8571,
+      "correct_full_or_partial": 1.0,
       "retrieval_hit_rate": 1.0
     }
   },
-  "token_f1_mean": 0.5088,
+  "token_f1_mean": 0.466,
   "refusal_reasons": {
     "no_relevant_context": 2,
     "model_refusal": 4,
-    "no_citations": 1
+    "no_citations": 0
   },
   "gate_scores": {
     "in_scope_min": 0.6271,
@@ -113,6 +113,7 @@
   "settings": {
     "answer_model": "openai/gpt-oss-20b",
     "reasoning_effort": "low",
+    "answer_style": "complete",
     "judge_model": "openai/gpt-oss-120b",
     "embedding_model": "BAAI/bge-small-en-v1.5",
     "chunk_strategy": "heading",

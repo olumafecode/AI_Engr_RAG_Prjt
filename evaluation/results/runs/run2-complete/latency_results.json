@@ -3,12 +3,12 @@
     "id": "q01",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 2220,
-    "server_total_ms": 2017,
+    "wall_ms": 1923,
+    "server_total_ms": 1811,
     "server_latency_ms": {
-      "generation": 1755,
-      "retrieval": 262,
-      "total": 2017
+      "generation": 1386,
+      "retrieval": 425,
+      "total": 1811
     },
     "refused": false,
     "error": null
@@ -17,12 +17,12 @@
     "id": "q02",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1252,
-    "server_total_ms": 888,
+    "wall_ms": 1942,
+    "server_total_ms": 1832,
     "server_latency_ms": {
-      "generation": 710,
-      "retrieval": 178,
-      "total": 888
+      "generation": 931,
+      "retrieval": 901,
+      "total": 1832
     },
     "refused": false,
     "error": null
@@ -31,12 +31,12 @@
     "id": "q03",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1457,
-    "server_total_ms": 1113,
+    "wall_ms": 1017,
+    "server_total_ms": 900,
     "server_latency_ms": {
-      "generation": 963,
-      "retrieval": 150,
-      "total": 1113
+      "generation": 745,
+      "retrieval": 156,
+      "total": 900
     },
     "refused": false,
     "error": null
@@ -45,12 +45,12 @@
     "id": "q04",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1018,
-    "server_total_ms": 750,
+    "wall_ms": 1225,
+    "server_total_ms": 1098,
     "server_latency_ms": {
-      "generation": 579,
-      "retrieval": 171,
-      "total": 750
+      "generation": 756,
+      "retrieval": 342,
+      "total": 1098
     },
     "refused": false,
     "error": null
@@ -59,12 +59,12 @@
     "id": "q05",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 963,
-    "server_total_ms": 710,
+    "wall_ms": 1111,
+    "server_total_ms": 972,
     "server_latency_ms": {
-      "generation": 537,
-      "retrieval": 173,
-      "total": 710
+      "generation": 772,
+      "retrieval": 199,
+      "total": 972
     },
     "refused": false,
     "error": null
@@ -73,12 +73,12 @@
     "id": "q06",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1097,
-    "server_total_ms": 672,
+    "wall_ms": 1198,
+    "server_total_ms": 1073,
     "server_latency_ms": {
-      "generation": 546,
-      "retrieval": 126,
-      "total": 672
+      "generation": 780,
+      "retrieval": 292,
+      "total": 1073
     },
     "refused": false,
     "error": null
@@ -87,12 +87,12 @@
     "id": "q07",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1195,
-    "server_total_ms": 882,
+    "wall_ms": 1089,
+    "server_total_ms": 928,
     "server_latency_ms": {
-      "generation": 690,
-      "retrieval": 192,
-      "total": 882
+      "generation": 765,
+      "retrieval": 163,
+      "total": 928
     },
     "refused": false,
     "error": null
@@ -101,12 +101,12 @@
     "id": "q08",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1094,
-    "server_total_ms": 675,
+    "wall_ms": 994,
+    "server_total_ms": 890,
     "server_latency_ms": {
-      "generation": 542,
-      "retrieval": 133,
-      "total": 675
+      "generation": 760,
+      "retrieval": 130,
+      "total": 890
     },
     "refused": false,
     "error": null
@@ -115,12 +115,12 @@
     "id": "q09",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1092,
-    "server_total_ms": 784,
+    "wall_ms": 1098,
+    "server_total_ms": 969,
     "server_latency_ms": {
-      "generation": 586,
-      "retrieval": 198,
-      "total": 784
+      "generation": 856,
+      "retrieval": 113,
+      "total": 969
     },
     "refused": false,
     "error": null
@@ -129,12 +129,12 @@
     "id": "q10",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1123,
-    "server_total_ms": 865,
+    "wall_ms": 1492,
+    "server_total_ms": 1377,
     "server_latency_ms": {
-      "generation": 655,
-      "retrieval": 210,
-      "total": 865
+      "generation": 1158,
+      "retrieval": 220,
+      "total": 1377
     },
     "refused": false,
     "error": null
@@ -143,12 +143,12 @@
     "id": "q11",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1372,
-    "server_total_ms": 983,
+    "wall_ms": 1050,
+    "server_total_ms": 912,
     "server_latency_ms": {
-      "generation": 756,
-      "retrieval": 227,
-      "total": 983
+      "generation": 694,
+      "retrieval": 218,
+      "total": 912
     },
     "refused": false,
     "error": null
@@ -157,12 +157,12 @@
     "id": "q12",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1606,
-    "server_total_ms": 1218,
+    "wall_ms": 1344,
+    "server_total_ms": 1151,
     "server_latency_ms": {
-      "generation": 1083,
-      "retrieval": 135,
-      "total": 1218
+      "generation": 847,
+      "retrieval": 304,
+      "total": 1151
     },
     "refused": false,
     "error": null
@@ -171,12 +171,12 @@
     "id": "q13",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1911,
-    "server_total_ms": 1589,
+    "wall_ms": 914,
+    "server_total_ms": 785,
     "server_latency_ms": {
-      "generation": 1469,
-      "retrieval": 120,
-      "total": 1589
+      "generation": 660,
+      "retrieval": 125,
+      "total": 785
     },
     "refused": false,
     "error": null
@@ -185,12 +185,12 @@
     "id": "q14",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1094,
-    "server_total_ms": 801,
+    "wall_ms": 1180,
+    "server_total_ms": 1048,
     "server_latency_ms": {
-      "generation": 596,
-      "retrieval": 205,
-      "total": 801
+      "generation": 749,
+      "retrieval": 300,
+      "total": 1048
     },
     "refused": false,
     "error": null
@@ -199,26 +199,26 @@
     "id": "q15",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1269,
-    "server_total_ms": 947,
+    "wall_ms": 1320,
+    "server_total_ms": 1174,
     "server_latency_ms": {
-      "generation": 806,
-      "retrieval": 141,
-      "total": 947
+      "generation": 965,
+      "retrieval": 210,
+      "total": 1174
     },
-    "refused": true,
+    "refused": false,
     "error": null
   },
   {
     "id": "q16",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1019,
-    "server_total_ms": 673,
+    "wall_ms": 1170,
+    "server_total_ms": 925,
     "server_latency_ms": {
-      "generation": 502,
-      "retrieval": 172,
-      "total": 673
+      "generation": 688,
+      "retrieval": 236,
+      "total": 925
     },
     "refused": false,
     "error": null
@@ -227,12 +227,12 @@
     "id": "q17",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 982,
-    "server_total_ms": 630,
+    "wall_ms": 1838,
+    "server_total_ms": 1719,
     "server_latency_ms": {
-      "generation": 509,
-      "retrieval": 121,
-      "total": 630
+      "generation": 1560,
+      "retrieval": 159,
+      "total": 1719
     },
     "refused": false,
     "error": null
@@ -241,12 +241,12 @@
     "id": "q18",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 898,
-    "server_total_ms": 589,
+    "wall_ms": 1195,
+    "server_total_ms": 1041,
     "server_latency_ms": {
-      "generation": 464,
-      "retrieval": 125,
-      "total": 589
+      "generation": 855,
+      "retrieval": 187,
+      "total": 1041
     },
     "refused": false,
     "error": null
@@ -255,12 +255,12 @@
     "id": "q19",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1203,
-    "server_total_ms": 930,
+    "wall_ms": 1245,
+    "server_total_ms": 1119,
     "server_latency_ms": {
-      "generation": 723,
-      "retrieval": 207,
-      "total": 930
+      "generation": 717,
+      "retrieval": 402,
+      "total": 1119
     },
     "refused": false,
     "error": null
@@ -269,12 +269,12 @@
     "id": "q20",
     "status": 200,
     "valid_json": true,
-    "wall_ms": 1299,
-    "server_total_ms": 935,
+    "wall_ms": 1069,
+    "server_total_ms": 958,
     "server_latency_ms": {
-      "generation": 718,
-      "retrieval": 216,
-      "total": 935
+      "generation": 777,
+      "retrieval": 181,
+      "total": 958
     },
     "refused": false,
     "error": null
