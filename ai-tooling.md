@@ -79,6 +79,8 @@ It also added a background warm-up at start-up and a peak-memory figure in `/hea
 
 Measuring memory locally before deploying gave a baseline to compare with Render's real figure.
 
-**What didn't work at first:** [e.g. anything that failed in the first build or deploy, and how it was fixed]
+**What didn't work at first:** **What didn't work at first:** On the first deploy the model never finished loading: `/health` showed memory stuck at 88 MB. When I asked a question, Render's health check timed out, it restarted the instance, and the question failed with a 502 error. After a restart the model loaded fine, which pointed to a timing problem rather than memory. The warm-up thread was being started while the app was still being imported, and loading the model inside a request could tie up the server's two threads. Claude moved the warm-up to gunicorn's `post_worker_init` hook, added the warm-up state and any error to `/health`, made questions wait briefly instead of loading a second copy of the model, and raised the server to four threads. After that, every start loaded the model in about 15 seconds.
+
+**Deployment results:** First build took 16 minutes. Peak memory on Render was 341 MB of 512 MB. The model loaded in 14.6 seconds at start-up, and a warm answer took 0.8 seconds. Waking from sleep took about [X] seconds.
 
 **Deployment results:** First build took [X] minutes. Peak memory on Render was [X] MB of 512 MB. Cold start after sleeping took about [X] seconds, and warm answers took about [X] seconds.

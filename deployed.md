@@ -1,6 +1,6 @@
 # Deployed Application
 
-**Live URL:** [replace with your Render URL, for example https://veridane-policy-assistant.onrender.com]
+**Live URL:** https://veridane-policy-assistant.onrender.com
 
 | Page | Path |
 |---|---|
