@@ -46,3 +46,39 @@ This file records which AI tools were used on the project, how they were used, a
 - The suggested model, llama-3.1-8b-instant, had been retired by Groq, and the first live request failed with `model_not_found`. We switched to Groq's recommended replacement, openai/gpt-oss-20b. Because it is a reasoning model, it needed low reasoning effort and a larger token budget so the answer isn't cut off.
 - The model bolded answers with Markdown, which the chat page displays as raw asterisks. The prompt now asks for plain text, and the code strips any bold.
 - "What changed in the password policy?" was refused. Printing the retrieved excerpts showed the Revision History never reached the model, so the refusal was correct given its evidence. A retrieval rule now adds the Revision History for questions about changes.
+
+## Stage 4: Web application
+
+**Tool:** Claude (claude.ai chat)
+
+**How I used it:** Most of the web layer was built alongside Stage 3. Claude wrote the Flask routes: the chat page (`/`), the chat API (`/chat`), the health check (`/health`), and a source view (`/docs/<doc ID>`) that opens each document at the cited section, or at the cited page for PDFs. It also turned the Stage 0 placeholder page into a working chat page that shows numbered citations with snippets and links. I tested the page in the browser and reported what I saw.
+
+**What worked well:** Designing the `/chat` response format early (answer, citations, snippets, links, timings) meant the page, the command-line tool, and the tests all used the same contract. Linking each citation to the exact section made answers easy to check by hand.
+
+**What didn't work at first:** The model's Markdown bold showed up as raw asterisks on the page, because the page displays plain text. The fix went into the prompt and a code clean-up step (see Stage 3).
+
+**What I had to check or fix:** [e.g. whether source links opened at the right section in each format]
+
+## Stage 5: Deployment and CI/CD
+
+**Tool:** Claude (claude.ai chat)
+
+**How I used it:** Claude checked Render's current documentation before writing the deployment set-up. The free tier still exists, with 512 MB of memory, a tenth of a CPU, sleep after 15 minutes idle, and 750 free hours a month per workspace. Claude then wrote `render.yaml`:
+
+- the vector index is built during Render's build step, because the running service's files are not kept;
+- one gunicorn worker keeps memory low;
+- the Groq key is entered in Render as a secret rather than stored in the repository;
+- Render's auto-deploy is off, so deploys come only from the GitHub Actions deploy hook after tests pass.
+
+It also added a background warm-up at start-up and a peak-memory figure in `/health`. I created the service from the Blueprint, added the deploy hook as a GitHub secret, and confirmed a push to `main` deployed automatically.
+
+**What worked well:** Checking the documentation first caught two things that would have caused problems:
+
+- a Blueprint without an explicit plan gets a paid plan;
+- Render's default Python (3.14) is newer than some of our libraries support, so the version is pinned to 3.12.11.
+
+Measuring memory locally before deploying gave a baseline to compare with Render's real figure.
+
+**What didn't work at first:** [e.g. anything that failed in the first build or deploy, and how it was fixed]
+
+**Deployment results:** First build took [X] minutes. Peak memory on Render was [X] MB of 512 MB. Cold start after sleeping took about [X] seconds, and warm answers took about [X] seconds.

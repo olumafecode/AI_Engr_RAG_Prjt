@@ -9,7 +9,8 @@ services:
     # The index is built during the build, so it and the embedding model are part of the
     # deployed files. Anything written while the service runs is lost when it sleeps.
     buildCommand: pip install -r requirements.txt && python -m app.ingest
-    startCommand: gunicorn wsgi:app --workers 1 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT
+    # gunicorn.conf.py sets the port, 1 worker, 4 threads, and starts the warm-up.
+    startCommand: gunicorn wsgi:app
     healthCheckPath: /health
     # Deploys come only from the GitHub Actions deploy hook, after lint and tests pass.
     autoDeployTrigger: "off"

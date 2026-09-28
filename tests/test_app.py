@@ -87,11 +87,31 @@ def test_health_reports_readiness_and_memory(client):
 
 
 def test_warm_up_loads_the_assistant_in_the_background(hash_settings):
-    from dataclasses import replace
-
     from app import create_app
+    from app.warmup import start_warm_up
 
-    app = create_app(replace(hash_settings, warmup_on_start=True))
-    app.extensions["warmup_thread"].join(timeout=30)
+    app = create_app(hash_settings)
+    thread = start_warm_up(app)
+    assert start_warm_up(app) is None  # a second call does nothing
+    thread.join(timeout=30)
     body = app.test_client().get("/health").get_json()
     assert body["assistant_ready"] is True
+    assert body["warmup"]["state"] == "ready"
+
+
+def test_chat_waits_for_a_running_warm_up_then_asks_to_retry(hash_settings, monkeypatch):
+    from app import create_app, routes
+    from app.warmup import warmup_status
+
+    app = create_app(hash_settings)
+    warmup_status(app).state = "running"  # never finishes in this test
+    monkeypatch.setattr(routes, "CHAT_WAIT_FOR_WARMUP_SECONDS", 0.1)
+    response = app.test_client().post("/chat", json={"question": "Minimum password length?"})
+    assert response.status_code == 503
+    assert "starting up" in response.get_json()["error"]
+
+
+def test_health_does_not_start_a_warm_up_by_itself(client):
+    body = client.get("/health").get_json()
+    assert body["warmup"] == {"state": "off", "seconds": None, "error": None}
+    assert body["uptime_seconds"] >= 0

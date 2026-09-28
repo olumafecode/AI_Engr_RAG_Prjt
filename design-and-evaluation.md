@@ -152,6 +152,14 @@ The lowest in-scope score was 0.621, and three of the four off-topic questions s
 
 The free instance has 512 MB of memory and a tenth of a CPU. Measured locally with the production start command (gunicorn, one worker, two threads) and the offline stand-in embedder, the worker peaked at about 163 MB with Chroma, the index, and the web app loaded, and the gunicorn master used about 26 MB. Importing ONNX Runtime and fastembed adds about 70 MB before the bge-small model itself is loaded. `/health` reports the worker's peak memory (`peak_memory_mb`), which gives the real figure on Render: [add the value after the first deploy].
 
+The first deploy exposed a start-up problem rather than a memory one. Render logged "HTTP health check failed (timed out after 5 seconds)" and restarted the instance, and a question asked at that time got a 502 error. Before the restart, `/health` showed the assistant never loading and memory stuck at the pre-load baseline, while after the restart the warm-up finished in 14.4 seconds. The warm-up thread had been started while the app module was still being imported, and loading the model inside a request could also tie up the server's two threads. The fix:
+
+- start the warm-up from gunicorn's `post_worker_init` hook, after the app is fully imported;
+- report its state and any error in `/health`, and write every thread's stack to the log if it stalls for 90 seconds;
+- make `/chat` wait briefly for a running warm-up instead of loading a second copy of the model;
+- compute the static parts of `/health` once at start-up;
+- raise the server to four threads so the health check is never queued behind other requests.
+
 ## Evaluation Approach and Results
 
 To be completed in Stage 6. The planned approach:

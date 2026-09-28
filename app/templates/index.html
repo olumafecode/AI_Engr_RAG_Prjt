@@ -233,7 +233,17 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question }),
         });
-        const body = await response.json();
+        const text = await response.text();
+        let body = null;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          const message = response.status >= 500
+            ? `The service is starting up or restarting (HTTP ${response.status}). Please wait a minute and try again.`
+            : `The service sent an unexpected reply (HTTP ${response.status}).`;
+          showAnswer(message, [], "error", null);
+          return;
+        }
         if (response.ok) {
           const state = body.refused ? "refused" : "answered";
           showAnswer(body.answer, body.citations, state, body.latency_ms);

@@ -5,19 +5,21 @@ from __future__ import annotations
 import re
 import sys
 import threading
+import time
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request, send_file
 
 from app.assistant import PolicyAssistant
 from app.corpus_utils import doc_id_from_filename, list_documents
 from app.generation import LLMNotConfiguredError, LLMUnavailableError
-from app.index_manifest import index_status
 from app.parsing import parse_document
 from app.retrieval import IndexNotReadyError
+from app.warmup import warmup_status
 
 bp = Blueprint("main", __name__)
 
 DOC_ID = re.compile(r"^VB-(?:ORG|POL)-\d{3}$")
+CHAT_WAIT_FOR_WARMUP_SECONDS = 20
 _assistant_lock = threading.Lock()
 
 
@@ -49,14 +51,18 @@ def index():
 
 @bp.get("/health")
 def health():
+    """Cheap by design: Render calls it every few seconds and allows 5 seconds for a reply."""
     settings = current_app.config["SETTINGS"]
+    static = current_app.config["HEALTH_STATIC"]
     return jsonify(
         status="ok",
         version=current_app.config["VERSION"],
-        corpus_documents=len(list_documents(settings.corpus_dir)),
-        index=index_status(settings),
+        corpus_documents=static["corpus_documents"],
+        index=static["index"],
         llm_configured=bool(settings.groq_api_key),
         assistant_ready="policy_assistant" in current_app.extensions,
+        warmup=warmup_status(current_app).as_dict(),
+        uptime_seconds=round(time.time() - current_app.config["STARTED_AT"]),
         peak_memory_mb=_peak_memory_mb(),
     )
 
@@ -76,6 +82,11 @@ def chat():
     if len(question) > settings.max_question_chars:
         limit = settings.max_question_chars
         return jsonify(error=f"Questions are limited to {limit} characters."), 400
+
+    warmup = warmup_status(current_app)
+    if warmup.state == "running" and not warmup.done.wait(CHAT_WAIT_FOR_WARMUP_SECONDS):
+        message = "The assistant is still starting up. Please try again in a few seconds."
+        return jsonify(error=message), 503
 
     try:
         answer = get_assistant().answer(question.strip())

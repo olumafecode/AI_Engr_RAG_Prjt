@@ -225,12 +225,12 @@ The app runs on a Render free web service defined in `render.yaml`:
 | Setting | Value | Why |
 |---|---|---|
 | Build command | `pip install -r requirements.txt && python -m app.ingest` | The index and the embedding model are created during the build, so they are part of the deployed files. Render's filesystem does not keep files written while the service runs. |
-| Start command | `gunicorn wsgi:app --workers 1 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT` | One worker keeps memory inside the free instance's 512 MB; two threads let the health check answer while a question is being processed. |
-| Health check | `/health` | Reports the index, whether the assistant is loaded, and peak memory use. |
+| Start command | `gunicorn wsgi:app` | Settings live in `gunicorn.conf.py`: one worker keeps memory inside the free instance's 512 MB, and four threads mean Render's health check always finds a free thread. The config file's `post_worker_init` hook starts the warm-up once the app has loaded. |
+| Health check | `/health` | Cheap by design (Render calls it every few seconds and allows 5 seconds). Reports the index, the warm-up state (`running`, `ready`, or `failed` with the reason), uptime, and peak memory use. |
 | Auto-deploy | Off | Deploys come only from the CI deploy hook, after lint and tests pass. |
 | `PYTHON_VERSION` | 3.12.11 | Matches CI and local development. |
 | `GROQ_API_KEY` | Entered in the Render Dashboard | Never stored in the repository. |
-| `WARMUP_ON_START` | true | Loads the model and index in the background at start-up, so the first question is not slowed down. |
+| `WARMUP_ON_START` | true | Loads the model and index in the background at start-up. A question asked during the warm-up waits up to 20 seconds, then gets a "still starting up" message instead of loading a second copy of the model. |
 | `EMBEDDING_THREADS` / `MALLOC_ARENA_MAX` | 1 / 2 | Suit the free instance's tenth of a CPU and keep memory use down. |
 
 To create the service: in the Render Dashboard choose **New > Blueprint**, select this repository, enter the Groq API key when asked, and apply. Then copy the service's deploy hook URL (service **Settings > Deploy Hook**) into the GitHub repository secret `RENDER_DEPLOY_HOOK_URL`.
