@@ -22,3 +22,6 @@ Thumbs.db
 
 # Downloaded embedding model files
 .cache/
+
+# Indexes built for the evaluation ablations
+evaluation/.indexes/

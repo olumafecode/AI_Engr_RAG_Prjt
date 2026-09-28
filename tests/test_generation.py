@@ -67,7 +67,8 @@ class _StubClient:
         self.kwargs = None
         message = SimpleNamespace(content=content)
         self._response = SimpleNamespace(
-            choices=[SimpleNamespace(message=message, finish_reason=finish_reason)]
+            choices=[SimpleNamespace(message=message, finish_reason=finish_reason)],
+            usage=SimpleNamespace(total_tokens=42),
         )
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
 
@@ -90,6 +91,7 @@ def test_reasoning_models_get_low_effort_and_hidden_reasoning(settings):
     client = _StubClient("Fourteen characters [S1].")
     reply = _model(settings, client, llm_reasoning_effort="low").complete("system", "user")
     assert reply == "Fourteen characters [S1]."
+    assert client.kwargs is not None
     assert client.kwargs["reasoning_effort"] == "low"
     assert client.kwargs["extra_body"] == {"include_reasoning": False}
     assert client.kwargs["max_completion_tokens"] == settings.llm_max_tokens

@@ -110,12 +110,12 @@ Targets were set before any measurement.
 | Error rate | System | Non-200 or malformed responses during the evaluation run | 0% |
 | Length compliance | System | Answers within the 200-word limit | 100% |
 
-The evaluation set has 25 questions:
+The evaluation set has 30 questions, the maximum the brief allows (it was planned at 25 and enlarged before any measurement, with the targets unchanged):
 
-- 20 in scope, spread across all 14 documents, with about 4 needing more than one document;
-- 5 out of scope.
+- 24 in scope, drawn from all 14 documents: 15 single-fact questions, 7 that need more than one document, and 2 about what changed between policy versions;
+- 6 out of scope: general knowledge, another company's policy, two facts about the bank that the policies do not contain, a creative request, and a prompt-injection attempt.
 
-With 20 in-scope questions, each question is worth 5 percentage points.
+With 24 in-scope questions, each is worth about 4.2 percentage points, so a 90% target allows at most two failures and the 5% false-refusal limit allows at most one.
 
 ## Ingestion Results
 
@@ -150,7 +150,7 @@ The lowest in-scope score was 0.621, and three of the four off-topic questions s
 
 ## Deployment Notes
 
-The free instance has 512 MB of memory and a tenth of a CPU. Measured locally with the production start command (gunicorn, one worker, two threads) and the offline stand-in embedder, the worker peaked at about 163 MB with Chroma, the index, and the web app loaded, and the gunicorn master used about 26 MB. Importing ONNX Runtime and fastembed adds about 70 MB before the bge-small model itself is loaded. `/health` reports the worker's peak memory (`peak_memory_mb`), which gives the real figure on Render: 340 MB once the model had loaded and 341 MB after answering a question, about two-thirds of the limit. On Render the warm-up took 14.6 seconds, and a warm question was answered end to end in about 0.8 seconds..
+The free instance has 512 MB of memory and a tenth of a CPU. Measured locally with the production start command (gunicorn, one worker, two threads) and the offline stand-in embedder, the worker peaked at about 163 MB with Chroma, the index, and the web app loaded, and the gunicorn master used about 26 MB. Importing ONNX Runtime and fastembed adds about 70 MB before the bge-small model itself is loaded. `/health` reports the worker's peak memory (`peak_memory_mb`), which gives the real figure on Render: [add the value after the first deploy].
 
 The first deploy exposed a start-up problem rather than a memory one. Render logged "HTTP health check failed (timed out after 5 seconds)" and restarted the instance, and a question asked at that time got a 502 error. Before the restart, `/health` showed the assistant never loading and memory stuck at the pre-load baseline, while after the restart the warm-up finished in 14.4 seconds. The warm-up thread had been started while the app module was still being imported, and loading the model inside a request could also tie up the server's two threads. The fix:
 
@@ -162,10 +162,25 @@ The first deploy exposed a start-up problem rather than a memory one. Render log
 
 ## Evaluation Approach and Results
 
-To be completed in Stage 6. The planned approach:
+The evaluation code is in `evaluation/`, and every script adds its results to `evaluation/results/report.md`.
 
-- Run the 25-question set against the deployed app.
-- Score groundedness and citation accuracy with a larger judge model than the one that generates answers.
-- Validate the judge against 10 hand-labeled answers.
-- Time every request.
-- Run an ablation over k and chunk size.
+**Question set.** `evaluation/questions.jsonl` holds the 30 questions. Each in-scope question has a short reference answer written from the policy text and the list of documents that are acceptable sources for it.
+
+**Answer quality** (`python -m evaluation.quality`). Every question goes through the same pipeline, settings, and index as the web app, run in-process so that the judge can see the full text of each excerpt the answering model saw. For each answer:
+
+- automatic checks: whether an acceptable source reached the excerpts (retrieval hit), whether every cited document is an acceptable source, the length in words, and token F1 against the reference answer;
+- an LLM judge, openai/gpt-oss-120b, which is larger than the answering model, openai/gpt-oss-20b. It decides whether every statement is supported by the excerpts (groundedness), whether each citation supports the statement it is attached to, and whether the answer matches the reference fully, partly, or not at all.
+
+An answer counts toward citation accuracy only if the judge accepts its citations and every cited document is an acceptable source. Refused in-scope questions count as incorrect and are excluded from groundedness and citation accuracy, which are measured on answered questions; the false-refusal rate reports them separately.
+
+**Judge validation** (`python -m evaluation.review`). Ten judged answers, chosen with the fixed seed, are labelled by hand without seeing the judge's verdicts, and the agreement on each of the three judgements is reported.
+
+**Latency** (`python -m evaluation.latency`). The first 20 in-scope questions are sent to the deployed app's `/chat`, after the warm-up has finished, and each is timed from sending the request to receiving the full response. The first `/health` call is timed separately; if the service was asleep, it measures the wake-up.
+
+**Rate limits.** Groq's free tier allows 8,000 tokens and 30 requests per minute for each model. The quality run tracks the tokens each request uses and waits when the next request would exceed a budget of 7,000 tokens per minute. The latency run spaces requests 20 seconds apart, because the deployed app uses the same account; a rate-limited request would measure the limit rather than the app. The two runs are not run at the same time.
+
+**Retrieval ablations** (`python -m evaluation.ablation`). Six retrieval configurations are compared on the 24 in-scope questions without calling the LLM: hybrid versus vector-only search, heading-aware versus fixed-window chunking, and k of 3, 5, and 8. For each, the run reports the hit rate, the mean reciprocal rank of the first acceptable source, how many acceptable sources were retrieved, and how many questions fall below the relevance threshold. Answer quality is measured once, for the deployed settings, because a full quality run uses a large share of the free tier's daily token allowance.
+
+### Results
+
+The results of the first full run will be recorded here from `evaluation/results/report.md`.

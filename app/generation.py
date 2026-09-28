@@ -68,7 +68,7 @@ class ChatModel(Protocol):
 class GroqChatModel:
     """Any OpenAI-compatible chat API; Groq by default (see LLM_BASE_URL)."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, max_retries: int = 2) -> None:
         if not settings.groq_api_key:
             raise LLMNotConfiguredError(
                 "The language model is not configured. Add GROQ_API_KEY to the environment."
@@ -79,10 +79,11 @@ class GroqChatModel:
             api_key=settings.groq_api_key,
             base_url=settings.llm_base_url,
             timeout=settings.llm_timeout,
-            max_retries=2,
+            max_retries=max_retries,
         )
         self._settings = settings
         self.name = settings.llm_model
+        self.last_usage: int | None = None  # total tokens of the last request, for rate pacing
 
     def complete(self, system: str, user: str) -> str:
         from openai import OpenAIError
@@ -109,6 +110,7 @@ class GroqChatModel:
         except OpenAIError as error:
             raise LLMUnavailableError(f"The language model request failed: {error}") from error
 
+        self.last_usage = response.usage.total_tokens if response.usage else None
         choice = response.choices[0]
         content = (choice.message.content or "").strip()
         if not content:

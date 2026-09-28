@@ -14,7 +14,7 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 | 3. Retrieval and generation | Done |
 | 4. Web application | Chat page, `/chat`, `/docs`, and `/health` working; polish next |
 | 5. Deployment to Render | Blueprint (`render.yaml`) ready; see [Deployment](#deployment) |
-| 6. Evaluation | Metrics and targets defined |
+| 6. Evaluation | Scripts and 30-question set ready; see [Evaluation](#evaluation) |
 | 7. Documentation and demo | In progress |
 
 ## Repository layout
@@ -45,6 +45,7 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 ├── scripts/
 │   ├── corpus_stats.py      Word and page counts for the corpus
 │   └── render_pdfs.py       Rebuilds the PDFs from corpus_src/
+├── evaluation/              Question set, evaluation scripts, and results
 ├── tests/                   pytest suite (app and corpus checks)
 ├── .github/workflows/ci.yml GitHub Actions: lint, test, deploy
 ├── render.yaml              Render Blueprint for the deployed service
@@ -236,6 +237,20 @@ The app runs on a Render free web service defined in `render.yaml`:
 To create the service: in the Render Dashboard choose **New > Blueprint**, select this repository, enter the Groq API key when asked, and apply. Then copy the service's deploy hook URL (service **Settings > Deploy Hook**) into the GitHub repository secret `RENDER_DEPLOY_HOOK_URL`.
 
 Free services sleep after 15 minutes without traffic and take about a minute to wake up. The live URL is in [deployed.md](deployed.md).
+
+## Evaluation
+
+The evaluation code is in `evaluation/`, and the 30 questions with reference answers are in `evaluation/questions.jsonl`. Each script adds its results to `evaluation/results/report.md`. Run them one at a time, because they share Groq's free-tier rate limits with the deployed app.
+
+```bash
+python -m evaluation.ablation                 # retrieval comparisons; no API calls, about a minute
+python -m evaluation.quality                  # answers and judges all 30 questions; 15 to 20 minutes
+python -m evaluation.review                   # writes a sheet to hand-label 10 answers
+python -m evaluation.review --score           # compares your labels with the judge
+python -m evaluation.latency --url https://veridane-policy-assistant.onrender.com   # about 7 minutes
+```
+
+`evaluation.quality` saves its progress after every question. If it stops (for example on a rate limit or a closed laptop), run it again and it continues where it left off; add `--fresh` to start over.
 
 ## Reproducibility
 
