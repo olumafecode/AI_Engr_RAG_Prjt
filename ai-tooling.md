@@ -89,8 +89,14 @@ Measuring memory locally before deploying gave a baseline to compare with Render
 
 **Tool:** Claude (claude.ai chat)
 
+## Stage 6: Evaluation
+
+**Tool:** Claude (claude.ai chat)
+
 **How I used it:** Claude wrote the 30-question evaluation set, with reference answers checked against the policy text, and the evaluation scripts: an in-process quality run judged by openai/gpt-oss-120b, a latency run against the deployed app, retrieval ablations, and a blind hand-labelling tool to validate the judge. I ran each script, hand-labelled 10 answers, and shared the report.
 
-**What worked well:** Pacing the requests to Groq's free-tier limits meant a full run finished with no failed requests. Saving progress after every question meant an interrupted run could resume. Fixing the targets in Stage 1 made the one miss (fully correct answers, 62% against 70%) something to report honestly, not something to adjust.
+**What worked well:** Pacing the requests to Groq's free-tier limits meant every run finished with no failed requests. Saving progress after every question meant an interrupted run could resume. Fixing the targets in Stage 1 kept the evaluation honest: the first run missed one target (fully correct answers, 62% against 70%), and we reported it rather than adjusting it.
 
-**What didn't work as hoped:** The judge's full-versus-partial verdicts agreed with my labels only 70% of the time, so that metric is the least reliable. One in-scope question was refused because the model twice answered without a valid citation.
+**Iteration:** We then tried one general prompt change, asking for every condition and contact that the excerpts attach to the answer. It raised fully correct answers to 92%, but citation accuracy fell to 75%. The answer characteristics showed why: answers were 72% longer while citing the same number of documents. Because citation accuracy is a required metric, we kept the original prompt for deployment and reported the second run as a prompt-variant comparison. Keeping the first run's exact wording as a named option, checked by a test, made switching back a one-line change.
+
+**What didn't work as hoped:** The judge's full-versus-partial verdicts agreed with my labels only 70% of the time, so that metric is the least reliable.
