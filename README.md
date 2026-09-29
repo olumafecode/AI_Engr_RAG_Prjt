@@ -12,10 +12,10 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 | 1. Policy corpus and success metrics | Done |
 | 2. Ingestion and indexing | Done |
 | 3. Retrieval and generation | Done |
-| 4. Web application | Chat page, `/chat`, `/docs`, and `/health` working; polish next |
-| 5. Deployment to Render | Blueprint (`render.yaml`) ready; see [Deployment](#deployment) |
-| 6. Evaluation | Scripts and 30-question set ready; see [Evaluation](#evaluation) |
-| 7. Documentation and demo | In progress |
+| 4. Web application | Done |
+| 5. Deployment to Render | Done: live at https://veridane-policy-assistant.onrender.com |
+| 6. Evaluation | Done: see [Results](#results) |
+| 7. Documentation and demo | Done |
 
 ## Repository layout
 
@@ -39,6 +39,7 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 │   ├── search.py            Command-line search: python -m app.search
 │   ├── ask.py               Command-line question answering: python -m app.ask
 │   ├── routes.py            /, /chat, /docs/<id>, /health
+│   ├── warmup.py            Loads the model in the background at start-up
 │   └── templates/           Chat page and source-document page
 ├── corpus/                  The 14 policy documents the app answers from
 ├── corpus_src/              Markdown sources for the three PDF policies
@@ -46,9 +47,10 @@ Built for the Quantic MSSE AI Engineering Project. Veridane Bank, its people, re
 │   ├── corpus_stats.py      Word and page counts for the corpus
 │   └── render_pdfs.py       Rebuilds the PDFs from corpus_src/
 ├── evaluation/              Question set, evaluation scripts, and results
-├── tests/                   pytest suite (app and corpus checks)
+├── tests/                   pytest suite (no model download or API key needed)
 ├── .github/workflows/ci.yml GitHub Actions: lint, test, deploy
 ├── render.yaml              Render Blueprint for the deployed service
+├── gunicorn.conf.py         Production server settings and warm-up hook
 ├── requirements.txt         Runtime dependencies (pinned)
 ├── requirements-dev.txt     Test and tooling dependencies (pinned)
 ├── wsgi.py                  Production entry point for gunicorn
@@ -85,7 +87,7 @@ copy .env.example .env
 
 If PowerShell refuses to run the activation script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once and try again.
 
-Open `.env` and add your API keys when a later stage needs them. The `.env` file is ignored by Git and must never be committed.
+Open `.env` and add your Groq API key (free at console.groq.com) after `GROQ_API_KEY=`. The `.env` file is ignored by Git and must never be committed.
 
 ## Build the index
 
@@ -134,7 +136,7 @@ Then open http://127.0.0.1:5000. In production (Linux, including Render) the app
 | `/` | GET | Chat page |
 | `/chat` | POST | Takes `{"question": "..."}` and returns the answer, numbered citations (document, section, snippet, link), refusal status, and timings |
 | `/docs/<doc_id>` | GET | Opens a source policy at the cited section; citation links point here |
-| `/health` | GET | Returns `{"status": "ok", ...}` with the app version, corpus document count, index status, and whether an LLM key is configured |
+| `/health` | GET | Returns `{"status": "ok", ...}` with the app version, corpus document count, index status, whether an LLM key is configured, the warm-up state, uptime, and peak memory |
 
 Example `/chat` call from PowerShell:
 
@@ -237,7 +239,7 @@ The app runs on a Render free web service defined in `render.yaml`:
 
 To create the service: in the Render Dashboard choose **New > Blueprint**, select this repository, enter the Groq API key when asked, and apply. Then copy the service's deploy hook URL (service **Settings > Deploy Hook**) into the GitHub repository secret `RENDER_DEPLOY_HOOK_URL`.
 
-Free services sleep after 15 minutes without traffic and take about a minute to wake up. The live URL is in [deployed.md](deployed.md).
+Free services sleep after 15 minutes without traffic. In testing, waking up took about 33 seconds, and loading the model about 15 seconds more. The live URL is in [deployed.md](deployed.md).
 
 ## Evaluation
 
@@ -257,7 +259,25 @@ To compare a change with an earlier run, archive the earlier run first; the repo
 python -m evaluation.archive run1             # moves the current results to evaluation/results/runs/run1/
 ```
 
+To make an archived run the current one again, archive the current run and then restore the other: `python -m evaluation.archive --restore run1`.
+
 `evaluation.quality` saves its progress after every question. If it stops (for example on a rate limit or a closed laptop), run it again and it continues where it left off; add `--fresh` to start over.
+
+### Results
+
+The deployed configuration met ten of the eleven targets set before measurement:
+
+| Metric | Result |
+|---|---|
+| Groundedness | 100% |
+| Citation accuracy | 91% |
+| Answers correct in full or in part | 96% |
+| Out-of-scope questions refused | 6 of 6 |
+| False refusals | 1 of 24 |
+| An acceptable source retrieved | every question |
+| Latency on Render, p50 / p95 | 1.16 s / 1.93 s |
+
+Fully correct answers were 62% against a 70% target. A second run with a more detailed prompt reached 92% on that metric but lowered citation accuracy to 75%, so the original prompt stays deployed. Details are in [design-and-evaluation.md](design-and-evaluation.md#results) and `evaluation/results/report.md`.
 
 ## Reproducibility
 

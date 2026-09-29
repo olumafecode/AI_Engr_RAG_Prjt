@@ -1,6 +1,19 @@
 # AI Tooling
 
-This file records which AI tools were used on the project, how they were used, and what worked and what didn't. Edit the bracketed prompts so they reflect your own experience.
+## Summary
+
+- **Main tool:** Claude, used in the claude.ai chat, was my coding and writing assistant at every stage. It wrote the code, tests, corpus, and documentation drafts.
+- **Supporting tools:** VS Code with the Ruff extension, and GitHub Actions for CI/CD.
+- **How the work was divided:** I made the decisions, ran everything on my machine, in GitHub Actions, and on Render, and reported the results back.
+- **What Claude could and couldn't test:** before handing over each set of files, Claude ran the linter and the test suite. Its sandbox could not reach Hugging Face or Groq, so it tested with stand-ins for the embedding model and the LLM. The real models were first exercised in CI and on my machine.
+
+Three habits made the biggest difference:
+
+- **Checking current facts before relying on them:** Groq's model list, Render's free tier, and Render's default Python version.
+- **Measuring before choosing a setting:** the relevance threshold was set from calibration scores.
+- **Making problems visible:** retrieved excerpts in the command-line tool, and the warm-up state in `/health`.
+
+The sections below go stage by stage.
 
 ## Stage 0: Repository and environment
 
@@ -8,9 +21,12 @@ This file records which AI tools were used on the project, how they were used, a
 
 **How I used it:** I asked Claude to generate the project skeleton: the Flask app factory and routes, settings, pinned requirements, the pytest suite, the GitHub Actions workflow, VS Code settings, and the README. Claude ran the tests and the linter before handing the files over.
 
-**What worked well:** [e.g. the workflow and tests passed on the first push]
+**What worked well:** The "Lint and test" job in GitHub Actions passed on the first push.
 
-**What I had to check or fix:** [e.g. anything that needed changing on your machine or in GitHub]
+**What I had to check or fix:**
+- My PC did not have Python 3.11, so I installed Python 3.12 and changed the CI workflow to 3.12 to match.
+- In PowerShell, `pip install -rrequirements-dev.txt` without a space failed; it needs `-r requirements-dev.txt`.
+- My Git remote pointed at a mistyped GitHub username until I corrected it with `git remote set-url`.
 
 ## Stage 1: Corpus and success metrics
 
@@ -18,10 +34,9 @@ This file records which AI tools were used on the project, how they were used, a
 
 **How I used it:** I chose the domain (a bank) and the policy topics, and Claude drafted a fictional company profile and 13 policies in the formats I needed (Markdown, HTML, plain text, and Markdown sources for the PDFs). I reviewed each batch and directed changes. These included adding Digital Financial Services as a fifth business segment with five business heads, adding the CIO/CTO role, and adding DFS support and fraud reporting contacts. Claude tracked facts shared across documents so later drafts stayed consistent with earlier ones, and wrote the script that renders the PDFs.
 
-**What worked well:** [e.g. drafting in batches of three made review manageable; cross-references between policies gave me multi-document evaluation questions for free]
+**What worked well:** Drafting in batches of three made review manageable. Cross-references between policies, such as mandatory block leave appearing in three of them, gave me multi-document evaluation questions. Using fictional regulators and laws kept the corpus free to include in the repository, and meant every correct answer had to come from retrieval.
 
-**What I had to check or fix:** [e.g. which roles owned which policies; consistency of limits and deadlines across documents]
-
+**What I had to check or fix:** My additions to the company profile (the DFS segment, the CIO/CTO, and the new contacts) also required updates to the roles in the Information Security Policy. Claude's first estimate of the corpus size (54 pages) was high; the word-count script measured about 48 pages, which is the figure the documents use.
 
 ## Stage 2: Ingestion and indexing
 
@@ -29,10 +44,11 @@ This file records which AI tools were used on the project, how they were used, a
 
 **How I used it:** Claude wrote the parsers for each format, the chunking module, the embedding and Chroma wrappers, the ingestion and search commands, and tests that run without downloading the model. I installed the update, built the index locally, checked search results, and pushed.
 
-**What worked well:** [e.g. the retrieval smoke test in CI confirmed the index works end to end]
+**What worked well:** The retrieval smoke test in CI was the first run of the real embedding model, because Claude's sandbox could not download it. For the password question, it ranked the correct section first with a similarity of 0.816.
 
-**What I had to check or fix:** [e.g. refreshing .env after the chunk settings changed]
-
+**What I had to check or fix:**
+- Four index tests failed on my PC because Windows denied access to pytest's temporary folder. Keeping pytest's temporary files inside the project folder (`--basetemp=.pytest-tmp`) fixed it.
+- I had to refresh my `.env` from `.env.example` after the chunk settings changed.
 
 ## Stage 3: Retrieval and generation
 
@@ -55,9 +71,9 @@ This file records which AI tools were used on the project, how they were used, a
 
 **What worked well:** Designing the `/chat` response format early (answer, citations, snippets, links, timings) meant the page, the command-line tool, and the tests all used the same contract. Linking each citation to the exact section made answers easy to check by hand.
 
-**What didn't work at first:** The model's Markdown bold showed up as raw asterisks on the page, because the page displays plain text. The fix went into the prompt and a code clean-up step (see Stage 3).
-
-**What I had to check or fix:** [e.g. whether source links opened at the right section in each format]
+**What didn't work at first:**
+- The model's Markdown bold showed up as raw asterisks on the page, because the page displays plain text. The fix went into the prompt and a code clean-up step (see Stage 3).
+- The page first showed "The request didn't reach the service" for any server error. After the 502 errors in Stage 5, it now reports the HTTP status and says the service may be starting up or restarting.
 
 ## Stage 5: Deployment and CI/CD
 
@@ -79,15 +95,9 @@ It also added a background warm-up at start-up and a peak-memory figure in `/hea
 
 Measuring memory locally before deploying gave a baseline to compare with Render's real figure.
 
-**What didn't work at first:** **What didn't work at first:** On the first deploy the model never finished loading: `/health` showed memory stuck at 88 MB. When I asked a question, Render's health check timed out, it restarted the instance, and the question failed with a 502 error. After a restart the model loaded fine, which pointed to a timing problem rather than memory. The warm-up thread was being started while the app was still being imported, and loading the model inside a request could tie up the server's two threads. Claude moved the warm-up to gunicorn's `post_worker_init` hook, added the warm-up state and any error to `/health`, made questions wait briefly instead of loading a second copy of the model, and raised the server to four threads. After that, every start loaded the model in about 15 seconds.
+**What didn't work at first:** On the first deploy the model never finished loading: `/health` showed memory stuck at 88 MB. When I asked a question, Render's health check timed out, it restarted the instance, and the question failed with a 502 error. After a restart the model loaded fine, which pointed to a timing problem rather than memory. The warm-up thread was being started while the app was still being imported, and loading the model inside a request could tie up the server's two threads. Claude moved the warm-up to gunicorn's `post_worker_init` hook, added the warm-up state and any error to `/health`, made questions wait briefly instead of loading a second copy of the model, and raised the server to four threads. After that, every start loaded the model in 12 to 15 seconds.
 
-**Deployment results:** First build took 2 minutes. Peak memory on Render was 341 MB of 512 MB. The model loaded in 14.6 seconds at start-up, and a warm answer took 0.8 seconds. Waking from sleep took about [X] seconds. However, after the fix deployment took 16 minutes
-
-**Deployment results:** First build took [X] minutes. Peak memory on Render was [X] MB of 512 MB. Cold start after sleeping took about [X] seconds, and warm answers took about [X] seconds.
-
-## Stage 6: Evaluation
-
-**Tool:** Claude (claude.ai chat)
+**Deployment results:** The first build and deploy took about 2 minutes. One later deploy took 16 minutes instead. Peak memory on Render was 341 MB of 512 MB (343 MB on the final version). The model loaded in 14.6 seconds at start-up (11.7 seconds on the final version), and a warm answer took 0.8 seconds. Waking from sleep took about 33 seconds.
 
 ## Stage 6: Evaluation
 
